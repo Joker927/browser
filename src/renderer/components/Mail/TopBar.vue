@@ -28,7 +28,7 @@
             </div>
         </div>
         <div class="r">
-            <p>{{data.currPage*50-49}}-{{data.currPage*50}}列 (共{{data.totalCount}}列)</p>
+            <p>{{data.currPage*50-49}}-{{data.currPage*50}}{{$t('email.column')}} ({{$t('email.account')}}{{data.totalCount}}{{$t('email.column')}})</p>
             <div>
                 <span class="icon p"
                       @click="__option('prev')"></span>
@@ -101,7 +101,7 @@ export default {
             const res = await this.api.emailOperate(req)
             if (res.code !== 0) return
             this.__refresh()
-            this.$Toast('操作成功')
+            this.$Toast(this.$t('success'))
         },
         __localSave() {
             let userMail = localStorage.getItem('USERMAIL') || {}
@@ -135,7 +135,7 @@ export default {
                 }
             }
             if (isSucess) {
-                this.$Toast('操作成功')
+                this.$Toast(this.$t('success'))
             }
         },
         __option(state) {
@@ -180,7 +180,7 @@ export default {
                 localStorage.setItem('USERMAIL', JSON.stringify(userMail))
             }
             this.__refresh()
-            this.$Toast('操作成功')
+            this.$Toast(this.$t('success'))
         }
     },
     watch: {},

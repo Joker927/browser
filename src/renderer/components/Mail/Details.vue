@@ -19,7 +19,7 @@
                 <div class="content">
                     <div class="column line">
                         <h4 class="title">{{item.emailTitle}}</h4>
-                        <span class="icon print"></span>
+                        <!-- <span class="icon print"></span> -->
                         <div class="sub">
                             <div class="name">
                                 <p>{{item.sendUserName}}</p>
@@ -27,10 +27,10 @@
                                     &lt;{{item.sendUserEmail}}&gt;
                                 </span>
                             </div>
-                            <span>{{item.time}} ({{item.timeAgo}} 前)</span>
+                            <span>{{item.sendTime| relative}} ({{item.sendTime|distance}} {{$t('email.ago')}})</span>
                         </div>
                         <div class="recipient">
-                            寄給 {{item.acceptUserName}}
+                            {{$t('email.remit')}} {{item.acceptUserName}}
                         </div>
                     </div>
                     <div class="column line"
@@ -41,7 +41,7 @@
                          v-if="item.emailAttachmentList.length">
                         <div class="attachmentTitle">
 
-                            <div>{{item.emailAttachmentList.length}}个附件</div>
+                            <div>{{item.emailAttachmentList.length}}{{$t('email.amount')}}</div>
                             <div class="download icon"
                                  @click="__downloadAll"></div>
                         </div>
@@ -76,7 +76,7 @@
                         <span class="btn cp"
                               @click="__edit('edit')">
                             <span class="icon reply"></span>
-                            编辑
+                            {{$t('email.edit')}}
                         </span>
                     </div>
                     <div class="column line btns"
@@ -85,13 +85,13 @@
                         <span class="btn cp"
                               @click="__edit('reply')">
                             <span class="icon reply"></span>
-                            回覆
+                            {{$t('email.reply')}}
                         </span>
                         <span class="btn cp"
                               v-if="item.forwardMaxno==0"
                               @click="__edit('repost')">
                             <span class="icon repost"></span>
-                            轉寄
+                            {{$t('email.repost')}}
                         </span>
 
                     </div>
@@ -165,7 +165,7 @@ export default {
             Promise.all(promises).then(() => {
                 zip.generateAsync({ type: 'blob' }).then(content => {
                     // 生成二进制流
-                    FileSaver.saveAs(content, '打包下载.zip') // 利用file-saver保存文件
+                    FileSaver.saveAs(content, 'default.zip') // 利用file-saver保存文件
                 })
             })
         },
@@ -192,9 +192,9 @@ export default {
 
                 mail.emailContent = `
                 <p><br></p>
-                <div style='color:#036eb7'> 在${date +
+                <div style='color:#036eb7'> ${date +
                     ' , ' +
-                    mail.emailTitle}中写道:</div>
+                    mail.emailTitle}:</div>
                 <p></p>
                 ${mail.emailContent}
                 ${attachment}
@@ -254,23 +254,19 @@ export default {
             }
         }
     },
-    watch: {
-        item: {
-            handler() {
-                this.item.time = formatRelative(
-                    subDays(new Date(this.item.sendTime), 0),
-                    new Date(),
-                    { locale: zhCN }
-                )
-                this.item.timeAgo = formatDistance(
-                    subDays(new Date(this.item.sendTime), 0),
-                    new Date(),
-                    { locale: zhCN }
-                )
-            },
-            immediate: true
+    filters: {
+        relative(value) {
+            return formatRelative(subDays(new Date(value), 0), new Date(), {
+                locale: zhCN
+            })
+        },
+        distance(value) {
+            return formatDistance(subDays(new Date(value), 0), new Date(), {
+                locale: zhCN
+            })
         }
     },
+    watch: {},
     created() {}
 }
 </script>

@@ -4,7 +4,7 @@
             <div>
                 <div class="postal cp"
                      @click="__edit">
-                    <p>寫郵件</p>
+                    <p>{{$t('email.write')}}</p>
                 </div>
                 <ul class="list">
                     <li v-for="(item,index) in list"
@@ -19,7 +19,7 @@
                 </ul>
                 <div class="out cp"
                      @click="__out">
-                    <p>離開郵箱</p>
+                    <p>{{$t('email.leave')}}</p>
                 </div>
             </div>
         </Scroll>
@@ -34,15 +34,15 @@ export default {
     data() {
         return {
             list: [
-                { name: '所有邮件', num: 0, class: 'all' },
-                { name: '收藏', class: 'collection' },
-                { name: '已发送', class: 'backup' },
-                { name: '草稿', class: 'draft' },
-                { name: '白名单', class: 'white' },
-                { name: '黑名单', class: 'black' },
-                { name: '云端档案', class: 'cloud' },
-                { name: '本地档案', class: 'local' },
-                { name: '垃圾桶', class: 'trash' }
+                { name: this.$t('email.all'), num: 0, class: 'all' },
+                { name: this.$t('email.collection'), class: 'collection' },
+                { name: this.$t('email.backup'), class: 'backup' },
+                { name: this.$t('email.draft'), class: 'draft' },
+                { name: this.$t('email.white'), class: 'white' },
+                { name: this.$t('email.black'), class: 'black' },
+                { name: this.$t('email.cloud'), class: 'cloud' },
+                { name: this.$t('email.local'), class: 'local' },
+                { name: this.$t('email.trash'), class: 'trash' }
                 // { name: '收件夾', num: 2 }
             ],
             active: 0

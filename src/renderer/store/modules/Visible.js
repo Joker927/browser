@@ -1,13 +1,14 @@
 const state = {
     menuState: null, //导航菜单显示状态
+
     groupState: false, //群组显示
     groupId: '', //群组ID
     groupAdd: false //true:新建立群组、群组添加成员
 }
 
 const mutations = {
-    SET_MENU_STATE(state, res) {
-        if (state.menuState === res && res) {
+    SET_NAV_MENU_STATE(state, res) {
+        if (res && state.menuState === res) {
             state.menuState = null
         } else {
             state.menuState = res

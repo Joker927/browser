@@ -3,52 +3,75 @@
         <Scroll>
             <div class="menu">
                 <div class="srarchWrap">
-                    <div class="srarch cp" @click="__search">
-                        <p>搜索</p>
+                    <div class="srarch cp"
+                         @click="__search">
+                        <p>{{$t('search')}}</p>
                     </div>
-                    <a @click="__createGroup" class="add cp" href="javascript:;" title="创建群组"></a>
+                    <a @click="__createGroup"
+                       class="add cp"
+                       href="javascript:;"
+                       v-tip="$t('side.createagroup')"></a>
 
                 </div>
                 <div class="menuList">
                     <div class="item">
-                        <div class="title cp" @click="__open(0)">
-                            <i class="arrow " :class="{'active':state[0]}"></i>
-                            <span class="name">聊天列表</span>
+                        <div class="title cp"
+                             @click="__open(0)">
+                            <i class="arrow "
+                               :class="{'active':state[0]}"></i>
+                            <span class="name">{{$t('side.chatlist')}}</span>
 
                         </div>
-                        <ul class="list" :class="{'active':state[0]}">
-                            <!-- <li class="lis cp"
-                v-for="(item,index) in friends"
-                :key="index">
-              <img class="img"
-                   :src="item.avatar"
-                   alt="">
-              <span class="name">{{item.remarkName||item.nickname||item.userName}} </span>
-            </li> -->
+                        <ul class="list"
+                            :class="{'active':state[0]}">
+                            <li class="lis cp"
+                                v-for="(item,index) in webIMList"
+                                :key="index"
+                                @click='SET_WEBIM_SHOW(index)'>
+                                <img class="img"
+                                     :src="item.avatar"
+                                     alt="">
+                                <span class="name">{{item.userName}} </span>
+                            </li>
                         </ul>
                     </div>
                     <div class="item">
-                        <div class="title cp" @click="__open(1)">
-                            <i class="arrow " :class="{'active':state[1]}"></i>
-                            <span class="name">联络人</span>
+                        <div class="title cp"
+                             @click="__open(1)">
+                            <i class="arrow "
+                               :class="{'active':state[1]}"></i>
+                            <span class="name">{{$t('side.contact')}}</span>
 
                         </div>
-                        <ul class="list" :class="{'active':state[1]}">
-                            <li class="lis cp" @click="__jump(item)" v-for="(item,index) in friends" :key="index">
-                                <img class="img" :src="item.avatar" alt="">
+                        <ul class="list"
+                            :class="{'active':state[1]}">
+                            <li class="lis cp"
+                                @click="__jump(item)"
+                                v-for="(item,index) in friends"
+                                :key="index">
+                                <img class="img"
+                                     :src="item.avatar"
+                                     alt="">
                                 <span class="name">{{item.remarkName||item.nickname||item.userName}} </span>
                             </li>
                         </ul>
                     </div>
                     <div class="item">
-                        <div class="title cp" @click="__open(2)">
-                            <i class="arrow" :class="{'active':state[2]}"></i>
-                            <span class="name">群组对话</span>
-
+                        <div class="title cp"
+                             @click="__open(2)">
+                            <i class="arrow"
+                               :class="{'active':state[2]}"></i>
+                            <span class="name">{{$t('side.groupconversations')}}</span>
                         </div>
-                        <ul class="list" :class="{'active':state[2]}">
-                            <li class="lis cp" v-for="(item,index) in groupList" :key="index" @click='__groupDetail(item.groupId)'>
-                                <img class="img" :src="item.image" alt="">
+                        <ul class="list"
+                            :class="{'active':state[2]}">
+                            <li class="lis cp"
+                                v-for="(item,index) in groupList"
+                                :key="index"
+                                @click='__groupIM(item)'>
+                                <img class="img"
+                                     :src="item.image"
+                                     alt="">
                                 <span class="name">{{item.groupName}} </span>
                             </li>
                         </ul>
@@ -56,8 +79,10 @@
                 </div>
             </div>
         </Scroll>
-        <Scroll v-if="searchVisible" ref="Scroll">
-            <Search @refresh='__refresh' @close="__close"></Search>
+        <Scroll v-if="searchVisible"
+                ref="Scroll">
+            <Search @refresh='__refresh'
+                    @close="__close"></Search>
         </Scroll>
 
     </div>
@@ -65,22 +90,22 @@
 </template>
 
 <script>
-import { mapState, mapMutations } from "vuex";
-import Search from "./Search";
-import Scroll from "@/commom/Scroll";
+import { mapState, mapMutations } from 'vuex'
+import Search from './Search'
+import Scroll from '@/commom/Scroll'
 
 export default {
     data() {
         return {
             req: {
-                type: "",
+                type: '',
                 userId: 0
             },
             friends: [],
             groupList: [],
             searchVisible: false,
             state: [false, false, false]
-        };
+        }
     },
     components: {
         Search,
@@ -88,66 +113,82 @@ export default {
     },
     computed: {
         ...mapState({
-            userInfo: state => state.UserInfo.userInfo
+            userInfo: state => state.UserInfo.userInfo,
+            webIMList: state => state.WebImQueue.webIMList
         })
     },
     methods: {
-        ...mapMutations(["SET_GROUP_STATE","SET_WEBIM_List"]),
+        ...mapMutations([
+            'SET_GROUP_STATE',
+            'SET_WEBIM_List',
+            'SET_WEBIM_SHOW'
+        ]),
         async __getdatas() {
-            this.req.userId = this.userInfo.userId;
+            this.req.userId = this.userInfo.userId
             const res = await Promise.all([
                 this.api.friendsList(this.req),
                 this.api.groupList(this.req)
-            ]);
-            this.friends = res[0].data;
-            this.groupList = res[1].data;
+            ])
+            this.friends = res[0].data
+            this.groupList = res[1].data
         },
         __open(index) {
-            this.$set(this.state, [index], !this.state[index]);
+            this.$set(this.state, [index], !this.state[index])
         },
         __close() {
-            this.searchVisible = false;
+            this.searchVisible = false
         },
         __search() {
             // this.state = [false, false, false]
-            this.searchVisible = true;
+            this.searchVisible = true
         },
         __createGroup() {
-            this.SET_GROUP_STATE({ add: true });
+            this.SET_GROUP_STATE({ add: true })
         },
         __jump(item) {
             this.$router.push({
-                name: "user",
+                name: 'user',
                 query: {
                     id: item.friendId,
                     is: item.isFriend
                 }
-            });
+            })
 
             let obj = {
                 userId: item.friendId,
                 userName: item.nickname,
                 avatar: item.avatar,
-                type: "personal",
+                type: 'personal',
                 isShow: true,
-                width: "194px",
-                height: "168px",
+                width: '194px',
+                height: '168px',
                 msgList: []
-            };
-            this.SET_WEBIM_List(obj);
+            }
+            this.SET_WEBIM_List(obj)
         },
-        __groupDetail(id) {
-            this.SET_GROUP_STATE({ id: id });
+        __groupIM(item) {
+            // this.SET_GROUP_STATE({ id: id });
+            let obj = {
+                userId: item.groupId,
+                userName: item.groupName,
+                avatar: item.image,
+                type: 'group',
+                isShow: true,
+                width: '194px',
+                height: '168px',
+                msgList: []
+            }
+            this.SET_WEBIM_List(obj)
         },
         __refresh() {
-            this.$refs.Scroll.refresh();
+            this.$refs.Scroll.refresh()
         }
     },
 
     created() {
-        this.__getdatas();
+        this.__getdatas()
     }
-};
+}
 </script>
 
 <style lang='scss' scoped>
@@ -159,11 +200,11 @@ export default {
     width: 210px;
     background: #ffffff;
     overflow: hidden;
-    z-index: 999;
+    z-index: 99;
 }
 
 .menu {
-    padding: 15px;
+    padding: 25px 15px;
 }
 .srarchWrap {
     display: flex;
@@ -172,7 +213,7 @@ export default {
         width: 140px;
         height: 26px;
         border-radius: 5px;
-        background: #dbdcdc url("./img/friends_search@2x.png") no-repeat 8px
+        background: #dbdcdc url('./img/friends_search@2x.png') no-repeat 8px
             center;
         > p {
             font-size: 12px;
@@ -187,7 +228,7 @@ export default {
         width: 26px;
         height: 26px;
         border-radius: 5px;
-        background: #dbdcdc url("./img/addGroup@2x.png") no-repeat center;
+        background: #dbdcdc url('./img/addGroup@2x.png') no-repeat center;
     }
 }
 .menuList {
@@ -222,12 +263,12 @@ export default {
     .arrow {
         width: 20px;
         height: 20px;
-        background-image: url("./img/dropDown_none@2x.png");
+        background-image: url('./img/dropDown_none@2x.png');
         background-repeat: no-repeat;
         background-position: center;
     }
     .active {
-        background-image: url("./img/dropDown@2x.png");
+        background-image: url('./img/dropDown@2x.png');
     }
 }
 

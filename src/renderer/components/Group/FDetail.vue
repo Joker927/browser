@@ -1,23 +1,29 @@
 <template>
-	<div>
-		<div class="info">
-			<div>
-				群头像<img :src="groupInfo.image" />
-			</div>
-			<div>
-				群名称
-				<span>{{groupInfo.groupName}}</span>
-			</div>
-		</div>
+    <div>
+        <div class="info">
+            <div>
+                {{$t('group.avatar')}}
+                <img :src="groupInfo.image" />
+            </div>
+            <div>
+                {{$t('group.name')}}
+                <span>{{groupInfo.groupName}}</span>
+            </div>
+        </div>
 
-		<div class="detail-fList">
-			<div class="search-f">
-                <input type="text" @focus="foucus" placeholder="搜索群成员" />
-                <span class="search-icon" :class="{'focusIcon':focusIcon}"></span>
+        <div class="detail-fList">
+            <div class="search-f">
+                <input type="text"
+                       @focus="foucus"
+                       :placeholder="$t('group.placeholder')" />
+                <span class="search-icon"
+                      :class="{'focusIcon':focusIcon}"></span>
             </div>
 
-			<div class="f-list">
-                <div v-for="(item,index) in groupInfo.memberList" :key="index" class="clearfix">
+            <div class="f-list">
+                <div v-for="(item,index) in groupInfo.memberList"
+                     :key="index"
+                     class="clearfix">
                     <div>
                         <img src="./img/share-friend.png" />
                     </div>
@@ -27,49 +33,49 @@
                     <span @click="__deteleF(item.groupMemberId)">移除</span>
                 </div>
             </div>
-		</div>
-	</div>
+        </div>
+    </div>
 </template>
 
 <script>
-import { mapState, mapMutations } from "vuex";
+import { mapState, mapMutations } from 'vuex'
 export default {
-    props: ["groupId"],
+    props: ['groupId'],
     data() {
         return {
-			focusIcon: false,
-			groupInfo: ''
-		};                                      
+            focusIcon: false,
+            groupInfo: ''
+        }
     },
     mounted() {
-        this.__groupDetail();
+        this.__groupDetail()
     },
     watch: {
         groupId: {
             handler(newVal) {
-                this.__groupDetail();
+                this.__groupDetail()
             },
             deep: true
         }
     },
     methods: {
-        ...mapMutations(["SET_GROUP_STATE"]),
+        ...mapMutations(['SET_GROUP_STATE']),
         __out() {
-            this.SET_GROUP_STATE();
-		},
-		foucus() {
-            this.focusIcon = true;
+            this.SET_GROUP_STATE()
+        },
+        foucus() {
+            this.focusIcon = true
         },
         async __groupDetail() {
-			const res = await this.api.groupInfo(this.groupId);
-			this.groupInfo = res.data;
-		},
-		async __deteleF(id) {
-			var arr = [id];
-			const res = await this.api.groupDelete(arr);
+            const res = await this.api.groupInfo(this.groupId)
+            this.groupInfo = res.data
+        },
+        async __deteleF(id) {
+            var arr = [id]
+            const res = await this.api.groupDelete(arr)
         }
     }
-};
+}
 </script>
 
 <style lang="scss" scoped>
@@ -79,27 +85,27 @@ export default {
     padding-left: 20px;
     border-bottom: 1px solid #dfdfe0;
     > div:first-child {
-		line-height: 50px;
-		margin-top: 10px;
-		color: #888;
+        line-height: 50px;
+        margin-top: 10px;
+        color: #888;
         img {
             width: 50px;
             height: 50px;
-			border-radius: 50%;
-			vertical-align: top;
-			margin-left: 16px;
-			margin-top: -3px;
+            border-radius: 50%;
+            vertical-align: top;
+            margin-left: 16px;
+            margin-top: -3px;
         }
     }
     > div:nth-child(2) {
-		height: 30px;
-		line-height: 30px;
-		color: #888;
-		span{
-			color: #231815;
-			margin-left: 16px;
-			font-weight: 600;
-		}
+        height: 30px;
+        line-height: 30px;
+        color: #888;
+        span {
+            color: #231815;
+            margin-left: 16px;
+            font-weight: 600;
+        }
     }
 }
 
@@ -115,7 +121,7 @@ export default {
         border: 1px solid #efefe0;
         background: #f5f6f7;
         padding-left: 10px;
-		outline: none;
+        outline: none;
     }
     input::-webkit-input-placeholder {
         padding-left: 20px;
@@ -126,11 +132,11 @@ export default {
     display: block;
     width: 14px;
     height: 14px;
-    background: url("./img/search-icon.png");
+    background: url('./img/search-icon.png');
     background-size: 100% 100%;
     position: absolute;
     top: 5px;
-	right: 315px;
+    right: 315px;
 }
 
 .focusIcon {
@@ -167,8 +173,8 @@ export default {
         }
         span {
             float: right;
-			color: #3F61A6;
-			cursor:pointer;
+            color: #3f61a6;
+            cursor: pointer;
         }
     }
 }

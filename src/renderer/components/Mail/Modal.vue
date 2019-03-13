@@ -12,7 +12,7 @@
                         <input type="text"
                                @focus="__foucus"
                                @blur="__blur"
-                               placeholder="搜索寄件人" />
+                               placeholder="$t('email.placeholder')" />
                         <span class="search-icon"
                               :class="{'focusIcon':focusIcon}"></span>
                     </div>
@@ -35,10 +35,10 @@
 
                 <div class="br fl">
                     <div class="br-title">
-                        已选择 个寄件人
+                        {{$t('email.selected')}}{{selectList.length}}{{$t('email.sender')}}
                     </div>
 
-                    <div class="f-list">
+                    <div class="f-list rlist">
                         <div v-for="(item,index) in selectList"
                              :key="index"
                              class="clearfix">
@@ -54,9 +54,9 @@
 
                     <div class="br-btns clearfix">
                         <div class="cp"
-                             @click="__out">取消</div>
+                             @click="__out">{{$t('cancel')}}</div>
                         <div class="cp"
-                             @click="__done">确定</div>
+                             @click="__done">{{$t('confirm')}}</div>
                     </div>
                 </div>
             </div>
@@ -134,7 +134,12 @@ export default {
             if (item.isChecked) {
                 this.selectList.push(item)
             } else {
-                this.selectList = this.list.filter(item => item.isChecked)
+                // this.selectList = this.list.filter(item => item.isChecked)
+                this.selectList.forEach((el, index) => {
+                    if (el.userId === item.userId) {
+                        this.selectList.splice(index, 1)
+                    }
+                })
             }
         },
         __del(index, item) {
@@ -144,7 +149,7 @@ export default {
                 }
             })
             this.selectList.splice(index, 1)
-            if (!item.del) {
+            if (!item.del && this.selectIds.includes(item.userId)) {
                 item.del = true
                 this.list.push(item)
             }
@@ -302,9 +307,11 @@ input {
         > div:first-child {
             width: 30px;
             height: 30px;
+            border-radius: 50%;
+            overflow: hidden;
+            background: #f1f1f1;
             img {
                 width: 100%;
-                border-radius: 50%;
             }
         }
         > div:nth-child(2) {
@@ -340,7 +347,9 @@ input {
     letter-spacing: 1px;
 }
 
-.checked-fList {
+.rlist {
+    overflow-y: auto;
+    height: calc(100% - 110px);
 }
 
 .br-btns {

@@ -5,7 +5,7 @@
             <ul class="tabs">
                 <li class="tab">
                     <span class="ellipsis"
-                          @click="__showHomePage">主页</span>
+                          @click="__showHomePage">{{$t('tab.home')}}</span>
                 </li>
                 <li class="tab back"
                     v-for="(item,index) in tabList"
@@ -104,10 +104,15 @@ export default {
             display: flex;
             align-items: center;
             > span {
-                width: 32px;
+                width: 30px;
                 height: 14px;
                 background-size: 100% 100%;
-                background-image: url('./img/head_add@2x.png');
+                background-image: url('./img/add_default@3x.png');
+            }
+        }
+        .add:hover {
+            > span {
+                background-image: url('./img/add_slide_pressed@3x.png');
             }
         }
         .tab {
@@ -134,7 +139,7 @@ export default {
                 height: 16px;
                 right: 16px;
                 top: 7px;
-                background: url(./img/delete_tab.png);
+                background: url('./img/delete_tab.png');
                 background-size: 100% 100%;
             }
         }

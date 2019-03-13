@@ -1,40 +1,96 @@
 <template>
     <div class="shade">
-        <div class="contain">
+        <div class="contain" v-if="!sureShow">
             <div class="exit" @click="__exit"></div>
             <div class="headImg">
-                <img src="./img/share-friend.png" />
+                <img :src="userImg" />
             </div>
             <div class="name">
                 {{userName}}
             </div>
             <div class="info clearfix">
-                <div>转账金额</div>
+                <div>{{$t('webim.money')}}</div>
                 <div>
-                    <select>
-                        <option>￥</option>
-                        <option>$</option>
+                    <select v-model="option">
+                        <option v-for="(item,index) in propertyList" :key="index" :value="item.name">
+                            {{item.name}}
+                        </option>
                     </select>
-                    <input type="number" placeholder="输入数量..." />
+                    <input type="text" :placeholder="$t('webim.placeholder1')" v-model="amount" />
                 </div>
             </div>
             <div class="explain">
-                <textarea placeholder="新增转账说明"></textarea>
+                <textarea :placeholder="$t('webim.placeholder2')"></textarea>
             </div>
-            <div class="btn">转账</div>
+            <div class="btn" @click="__sureTransfer()">{{$t('webim.transfer')}}</div>
+        </div>
+
+        <div class="contain" v-if="sureShow">
+            <div class="sureImg"></div>
+            <div class="sureDiv">给{{this.userName}}{{$t('webim.transfer')}}</div>
+            <div class="sureDiv">{{this.amount}}</div>
+            <div class="sureBtn" @click="__exit">{{$t('webim.done')}}</div>
         </div>
     </div>
 </template>
 <script>
+import { mapState, mapMutations } from "vuex";
 export default {
-    props: ["userId", "userName"],
+    props: ["userIdx", "userId", "userName", "userImg"],
     data() {
-        return {};
+        return {
+            option: "GIT",
+            sureShow: false,
+            toAddress: "",
+            amount: ""
+        };
     },
-    mounted() {},
+    mounted() {
+        this.__getUserInfo();
+        console.log(this.propertyList);
+    },
+    computed: {
+        ...mapState({
+            userInfo: state => state.UserInfo.userInfo,
+            addressList: state => state.UserInfo.addressList,
+            seed: state => state.UserInfo.seed,
+            propertyList: state => state.Wallet.propertyList
+        })
+    },
     methods: {
         __exit() {
             this.$emit("changeStatus", false);
+        },
+        __sureTransfer() {
+            console.log(this.userIdx);
+            this.__transferToSeedAddress();
+        },
+        //获取对方用户信息
+        async __getUserInfo() {
+            const res = await this.api.userInfo({ id: this.userId });
+            this.toAddress = res.data.collectionAddress;
+        },
+        //根据seed地址转账
+        async __transferToSeedAddress() {
+            let contractAddress = null;
+            this.propertyList.forEach(val => {
+                if (val.name == this.option) {
+                    contractAddress = val.address;
+                }
+            });
+            let params = {
+                seed: this.seed,
+                addressList: this.addressList,
+                amount: this.amount,
+                toAddress: this.toAddress,
+                contractAddress: contractAddress
+            };
+            const res = await this.api.transferToSeedAddress(params);
+            if (res.msg != "Success") {
+                this.$Toast(res.msg);
+            } else {
+                this.sureShow = true;
+            }
         }
     }
 };
@@ -97,10 +153,11 @@ export default {
             margin-left: 14px;
         }
         input {
-            width: 60%;
+            width: 80%;
             border: none;
             outline: none;
-            margin-left: 6px;
+            margin-left: 14px;
+            margin-top: 10px;
         }
         input::-webkit-input-placeholder {
             color: #888;
@@ -113,7 +170,7 @@ export default {
     textarea {
         resize: none;
         width: 100%;
-        height: 30px;
+        height: 20px;
         border: none;
         outline: none;
         padding: 0 14px;
@@ -131,8 +188,28 @@ export default {
     height: 22px;
     line-height: 22px;
     text-align: center;
-    margin-top: 8px;
     border-radius: 4px;
+}
+.sureImg {
+    width: 40px;
+    height: 40px;
+    background: url(./img/pay_detail_success@3x.png);
+    background-size: 100% 100%;
+    margin: 0 auto;
+    margin-top: 20px;
+}
+.sureDiv {
+    text-align: center;
+}
+.sureBtn {
+    color: #fff;
+    background: #3f61a6;
+    height: 26px;
+    width: 120px;
+    margin: 10px auto;
+    border-radius: 8px;
+    text-align: center;
+    line-height: 26px;
 }
 </style>
 

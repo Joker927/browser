@@ -1,0 +1,33 @@
+._tips {
+    position: relative;
+    cursor: pointer;
+}
+._tips::before {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 0px;
+    z-index: 2;
+    transform: translate(-50%);
+    border-width: 6px;
+    border-color: rgba(0, 0, 0, 0.8) transparent transparent transparent;
+    border-style: solid;
+}
+._tips::after {
+    content: attr(data-tip);
+    position: absolute;
+    top: 0%;
+    left: 50%;
+    z-index: 1;
+    transform: translate(-50%, -100%);
+
+    background: rgba(0, 0, 0, 0.8);
+    border-radius: 4px;
+    min-width: 40px;
+    white-space: nowrap;
+    text-align: center;
+    padding: 2px 5px;
+    color: #ffffff;
+    font-size: 12px;
+    line-height: 1.5;
+}

@@ -26,11 +26,29 @@ export default {
         })
     },
     methods: {
-        ...mapMutations(['GET_USER_INFO', 'SET_MENU_STATE']),
+        ...mapMutations([
+            'GET_USER_INFO',
+            'SET_NAV_MENU_STATE',
+            'SET_FEED_MENU_STATE',
+            'SET_FEED_ACCESS_MENU_STATE',
+            'SET_EMOJI_STATE'
+        ]),
         __cancel() {
             let className = event.target.className
+            console.log(className, 'className')
             if (typeof className !== 'string') return
-            if (className.indexOf('NAV_MENU') === -1) this.SET_MENU_STATE(null)
+            if (className.indexOf('NAV_MENU') === -1)
+                this.SET_NAV_MENU_STATE(null)
+            if (className.indexOf('FEED_MENU') === -1)
+                this.SET_FEED_MENU_STATE(null)
+            if (className.indexOf('ACCESS_MENU') === -1)
+                this.SET_FEED_ACCESS_MENU_STATE(false)
+            if (
+                className.indexOf('EMOJI_MENU') === -1 &&
+                className.indexOf('emoji') === -1 &&
+                event.target.parentNode.className.indexOf('emoji') === -1
+            )
+                this.SET_EMOJI_STATE(false)
         }
     },
     created() {
@@ -65,24 +83,32 @@ body {
     font-size: 14px;
 }
 ::-webkit-scrollbar-track-piece {
-    background-color: #fff;
+    background-color: transparent;
 }
 ::-webkit-scrollbar {
     width: 5px;
 }
 ::-webkit-scrollbar-thumb {
-    background: #999;
+    background: rgba(153, 153, 153, 0.24);
+    border-radius: 10px;
+    border: 1px solid #ffffff;
 }
 #app {
     /* position: relative; */
     width: 100%;
     height: 100%;
 }
+.highlight {
+    color: #3f61a6;
+    text-decoration: none;
+    font-weight: 600;
+}
 .line {
     border-bottom: 1px solid #dbdcdc;
 }
 .cp {
     cursor: pointer;
+    user-select: none;
 }
 .ellipsis {
     overflow: hidden;
@@ -95,6 +121,9 @@ body {
 .mt16 {
     margin-top: 16px;
 }
+.h100 {
+    height: 100%;
+}
 .container {
     position: fixed;
     top: 80px;
@@ -102,10 +131,13 @@ body {
     left: 0;
     right: 0;
     background: #ffffff;
-    /* overflow: hidden; */
+    overflow: hidden;
 }
 .fl {
     float: left;
+}
+.fr {
+    float: right;
 }
 .clearfix:after,
 .clearfix:before {

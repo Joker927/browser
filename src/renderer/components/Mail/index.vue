@@ -1,6 +1,6 @@
 <template>
     <div class="mailWrap"
-         v-if="mailState">
+         v-show="mailState">
         <Menu @selected='__menuSelected'
               @edit='__edit(true)'></Menu>
         <div class="mailContent">
@@ -206,14 +206,15 @@ export default {
         },
         __getLoaclMails() {
             let userMail = localStorage.getItem('USERMAIL')
+            console.log(typeof userMail)
             let userId = this.userInfo.userId
             if (typeof userMail === 'string') {
                 userMail = JSON.parse(userMail)
+                if (userId in userMail) {
+                    return userMail[userId]
+                }
             }
 
-            if (userId in userMail) {
-                return userMail[userId]
-            }
             return []
         },
         async __getEmailDetails(state, item) {
@@ -276,11 +277,14 @@ export default {
     position: absolute;
     top: 0;
     bottom: 0;
+    left: 0;
+    right: 0;
     width: 100%;
     max-width: 1156px;
-    // height: calc(100% - 80px);
     background: #ffffff;
     display: flex;
+    margin: 0 auto;
+    z-index: 10;
 }
 .mailContent {
     position: absolute;

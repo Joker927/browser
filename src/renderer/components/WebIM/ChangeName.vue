@@ -2,15 +2,15 @@
     <div class="shade">
         <div class="contain">
             <div class="title">
-                更改名称
+                {{$t('webim.title')}}
             </div>
             <div class="headImg">
-                <img src="./img/share-friend.png"/>
-                <input type="text"/>
+                <img src="./img/share-friend.png" />
+                <input type="text" />
             </div>
             <div class="btns">
-                <div>确定</div>
-                <div @click="__cancle">取消</div>
+                <div>{{$t('confirm')}}</div>
+                <div @click="__cancle">{{$t('cancel')}}</div>
             </div>
         </div>
     </div>
@@ -19,13 +19,13 @@
 export default {
     methods: {
         __cancle() {
-            this.$emit("changeStatus", false);
+            this.$emit('changeStatus', false)
         }
-    },
-};
+    }
+}
 </script>
 <style lang="scss" scoped>
-.shade{
+.shade {
     position: fixed;
     width: 100%;
     height: 100%;
@@ -33,16 +33,16 @@ export default {
     left: 0;
     background: rgba(0, 0, 0, 0.4);
 }
-.contain{
+.contain {
     width: 600px;
     height: 270px;
     background: #fff;
     position: absolute;
     top: 50%;
     left: 50%;
-    transform: translate(-50%,-50%);
+    transform: translate(-50%, -50%);
 }
-.title{
+.title {
     height: 50px;
     background: #ccc;
     font-size: 21px;
@@ -51,9 +51,9 @@ export default {
     font-weight: 500;
     padding-left: 30px;
 }
-.headImg{
+.headImg {
     height: 148px;
-    img{
+    img {
         width: 120px;
         height: 120px;
         border-radius: 50%;
@@ -61,7 +61,7 @@ export default {
         margin-left: 30px;
         float: left;
     }
-    input{
+    input {
         width: 300px;
         height: 40px;
         margin-top: 54px;
@@ -73,10 +73,10 @@ export default {
         color: #595757;
     }
 }
-.btns{
+.btns {
     margin-top: 10px;
     cursor: pointer;
-    >div{
+    > div {
         width: 72px;
         height: 37px;
         line-height: 37px;
@@ -84,11 +84,11 @@ export default {
         text-align: center;
         margin-right: 20px;
     }
-    >div:first-child{
+    > div:first-child {
         color: #3f61a6;
         border: 1px solid #3f61a6;
     }
-    >div:last-child{
+    > div:last-child {
         background: #3f61a6;
         color: #fff;
     }

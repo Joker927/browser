@@ -11,10 +11,11 @@
                 <span v-for="(item,index) in menu"
                       :key="index"
                       class="icon cp"
-                      :class="{'active':selectNum=== index,[item]:true,'locked':forwardMaxno>0,'ed':emojiShow}"
-                      @click="__cleckTools(item,index)"></span>
+                      v-tip="item.lang"
+                      :class="{'active':selectNum=== index,[item.class]:true,'locked':forwardMaxno>0,'ed':emojiShow}"
+                      @click="__cleckTools(item.class,index)"></span>
                 <span class="send cp"
-                      @click="__send()">傳送</span>
+                      @click="__send()"> {{$t('email.send')}} </span>
                 <div ref="toolbar"
                      v-show="toolBar"
                      class="toolbar">
@@ -36,11 +37,11 @@
         </div>
         <div class="main">
             <div class="title">
-                <span>主旨</span> <input v-model="emailTitle"
+                <span> {{$t('email.keynote')}} </span> <input v-model="emailTitle"
                        type="text">
             </div>
             <div class="name">
-                <span class="n">收件人</span>
+                <span class="n">{{$t('email.to')}} </span>
                 <!-- <input v-model="acceptUserId"
                        type="text"> -->
                 <ul class="list">
@@ -51,7 +52,7 @@
                               @click="__del(index)">x</span>
                     </li>
                     <li v-if="selectedList.length>3">
-                        <p>与其他{{selectedList.length-3}}位</p>
+                        <p> {{$t('email.other')}}{{selectedList.length-3}}{{$t('email.people')}} </p>
                     </li>
                     <li class="input">
                         <input type="text"
@@ -84,25 +85,28 @@
                     <div class="optionsWrap">
                         <ul class="options"
                             v-if="searchShow">
-                            <li class="title">搜尋所有用戶結果</li>
+                            <li class="title">{{$t('email.text')}}</li>
                             <li class="cp"
                                 @click="__select(item)"
-                                v-for="(item,index) in searchlist">
+                                v-for="(item,index) in searchlist"
+                                :key="index">
                                 <p> &lt;{{item.nickname}}&gt;</p>
                             </li>
                         </ul>
                         <ul class="options"
                             v-else>
-                            <li class="title">最近互动邮件</li>
+                            <li class="title">{{$t('email.lately')}}</li>
                             <li class="cp"
                                 @click="__select(item)"
-                                v-for="(item,index) in recentuserlist">
+                                v-for="(item,index) in recentuserlist"
+                                :key="index">
                                 <p> &lt;{{item.nickname}}&gt;</p>
                             </li>
-                            <li class="title">联络人</li>
+                            <li class="title">{{$t('email.contact')}}</li>
                             <li class="cp"
                                 @click="__select(item)"
-                                v-for="(item,index) in friendlist">
+                                v-for="(item,index) in friendlist"
+                                :key="index+'i'">
                                 &lt;{{item.nickname}}&gt;
                             </li>
                         </ul>
@@ -119,15 +123,18 @@
                     <div class="attachment">
                         <div v-for="(item,index) in attachment"
                              :key="index">
-                            <div class="info">
-                                <span>{{item.name}}</span>({{item.size}}KB)
+                            <div class="item"
+                                 v-if="item.flag">
+                                <div class="info">
+                                    <span>{{item.name}}</span>({{item.size}}KB)
+                                </div>
+                                <div class="progressWrap">
+                                    <div :style="{width:item.width}"
+                                         class="progress"></div>
+                                </div>
+                                <div @click="__delAttachment(item)"
+                                     class="iocn cancel cp"></div>
                             </div>
-                            <div class="progressWrap">
-                                <div :style="{width:item.width}"
-                                     class="progress"></div>
-                            </div>
-                            <div @click="__delAttachment(item.id)"
-                                 class="iocn cancel cp"></div>
                         </div>
                     </div>
                 </div>
@@ -140,48 +147,47 @@
              v-if="linkShow">
             <div class="addLink">
                 <div class="title">
-                    <h4>修改链接</h4>
+                    <h4>{{$t('email.modifyLink')}}</h4>
                     <span class="close"></span>
                 </div>
                 <div class="form">
                     <div class="txt">
-                        <p>要显示的文本:</p> <input v-model="href.text"
+                        <p>{{$t('email.text')}}:</p> <input v-model="href.text"
                                type="text">
                     </div>
                     <div>
                         <div class="left">
-                            <p>链接到:</p>
+                            <p>{{$t('email.link')}}:</p>
                             <p @click="__checkTab(0)"
                                class="cp link"
-                               :class="{active:activeTab ===0}">网址</p>
+                               :class="{active:activeTab ===0}">{{$t('email.url')}}</p>
                             <p @click="__checkTab(1)"
                                class="cp mail"
-                               :class="{active:activeTab ===1}">电子邮件地址</p>
+                               :class="{active:activeTab ===1}">{{$t('email.address')}}</p>
                         </div>
                         <div class="right">
-                            <div v-if="activeTab===0">此链接应转到什么网址？</div>
-                            <div v-else>此链接将链接到哪个邮件地址?</div>
+                            <div v-if="activeTab===0">{{$t('email.text1')}}</div>
+                            <div v-else>{{$t('email.text2')}}</div>
                             <input type="text"
                                    v-model="href.url">
 
                             <div class="test"
                                  v-if="activeTab===0">
-                                测试此链接
+                                {{$t('email.text3')}}
                                 <!-- <a :href="href"
                    target="_blank"></a> -->
                             </div>
                             <div v-if="activeTab===0">
-                                不确定框中要放什么？首先，在网络中查找想要链接的页面。（可能需要使用搜索引
-                                擎。） 然后，从浏览器的地址栏的框中复制网址，并将其粘贴到上方的框中。
+                                {{$t('email.text4')}}
                             </div>
                         </div>
                     </div>
                 </div>
                 <div class="btn">
                     <span class="cp"
-                          @click="__switch">取消</span>
+                          @click="__switch">{{$t('email.cancel')}}</span>
                     <span class="done cp"
-                          @click="__done">确定</span>
+                          @click="__done">{{$t('email.confirm')}}</span>
                 </div>
             </div>
         </div>
@@ -204,6 +210,8 @@
             </div>
 
         </div> -->
+        <span class="sendBtn cp"
+              @click="__send">{{$t('email.send')}}</span>
     </div>
 </template>
 
@@ -211,8 +219,7 @@
 import { mapState } from 'vuex'
 import E from 'wangeditor'
 import Scroll from '@/commom/Scroll'
-import EmojiPanel from './EmojiPanel'
-import { closestIndexTo, closestTo } from 'date-fns/esm'
+import EmojiPanel from '@/components/Emoji'
 
 export default {
     props: {
@@ -226,14 +233,21 @@ export default {
     },
     data() {
         return {
-            menu: ['tools', 'upload', 'link', 'emoji', 'lock', 'trash'],
+            menu: [
+                { class: 'tools', lang: this.$t('email.edit') },
+                { class: 'upload', lang: this.$t('email.attachment') },
+                { class: 'link', lang: this.$t('email.link') },
+                { class: 'emoji', lang: this.$t('email.emoji') },
+                { class: 'lock', lang: this.$t('email.isRepost') },
+                { class: 'trash', lang: this.$t('email.delete') }
+            ],
             toolBar: false,
             selectNum: null,
             emailTitle: '',
-            emailContent: '输入邮件内容',
+            emailContent: this.$t('email.text5'),
             acceptUserId: null,
-            attachmentIds: [],
             attachment: [],
+            attachmentTempIds: [],
             editor: '',
             linkShow: false,
             activeTab: 0,
@@ -270,21 +284,25 @@ export default {
             let str = ''
             switch (this.titleStatus) {
                 case '0':
-                    str = '新邮件'
+                    str = this.$t('email.title')
 
                     break
                 case '1':
-                    str = '回复'
+                    str = this.$t('email.title1')
                     break
                 case '2':
-                    str = '转发'
+                    str = this.$t('email.title2')
                     break
                 case '3':
-                    str = '编辑'
+                    str = this.$t('email.title3')
                     break
             }
-            console.log(str, 'str')
             return str
+        },
+
+        attachmentIds() {
+            let arr = this.attachment.filter(item => item.flag)
+            return arr.map(item => item.id)
         }
     },
     methods: {
@@ -362,13 +380,13 @@ export default {
             // console.log(html)
         },
 
-        async __send(status = 1) {
+        async __send() {
             let data = {
                 acceptUserIds: this.acceptUserIds,
                 // acceptUserName: 'string',
                 attachmentIds: this.attachmentIds,
                 emailContent: this.emailContent,
-                emailStatus: status,
+                emailStatus: status || 1,
                 emailTitle: this.emailTitle,
                 forwardMaxno: this.forwardMaxno,
                 sendUserId: this.userInfo.userId,
@@ -382,7 +400,7 @@ export default {
             }
             const res = await this.api.emailSend(data)
             if (res.code == 0) {
-                this.$Toast('发送成功')
+                this.$Toast(this.$t('email.success'))
                 this.$emit('close', false)
             } else {
                 this.$Toast(res.msg)
@@ -440,30 +458,23 @@ export default {
                 })
             }
         },
-        __delAttachment(id) {
-            let index = this.attachmentIds.indexOf(id)
-            this.attachmentIds.splice(index, 1)
-            let i
-            this.attachment.forEach((item, index) => {
-                if (item.id === id) {
-                    i = index
-                }
-            })
-            this.attachment.splice(i, 1)
+        __delAttachment(item) {
+            item.flag = false
         },
         async __uploadAttachment() {
             let files = this.$refs.UpFile.files
             let id = this.userInfo.userId
             let reqs = []
-            let o = {}
+
             for (let i = 0; i < files.length; i++) {
                 let formData = new FormData()
                 formData.append('userId', id)
                 formData.append('file', files[i])
-                o = {
+                let o = {
                     name: files[i].name,
                     size: Math.round(files[i].size / 1024),
                     width: 0,
+                    flag: true,
                     id: null
                 }
 
@@ -472,17 +483,23 @@ export default {
                     this.$set(o, ['width'], width)
                 }
                 this.attachment.unshift(o)
-                reqs.push(this.api.emailUpload(formData, cb))
+                reqs.unshift(this.api.emailUpload(formData, cb))
             }
             const res = await Promise.all(reqs)
+            let ids = []
             for (let i = 0; i < res.length; i++) {
-                if (!res[i].code) {
-                    this.attachmentIds.push(res[i].data.attachmentId)
-                    o.id = res[i].data.attachmentId
+                if (res[i].code == 0) {
+                    ids.push(res[i].data.attachmentId)
+                    // this.attachmentIds.push(res[i].data.attachmentId)
+                    // this.attachment[i].id = res[i].data.attachmentId
                 }
             }
+            this.attachmentTempIds = ids.concat(this.attachmentTempIds)
+            this.attachment.forEach((item, index) => {
+                item.id = this.attachmentTempIds[index]
+            })
 
-            console.log(res, '__uploadAttachment', this.attachmentIds)
+            console.log(this.attachment, ' this.attachment')
         },
         __switch() {
             this.href = {}
@@ -578,6 +595,19 @@ export default {
     z-index: 1;
     background: #ffffff;
 }
+.sendBtn {
+    position: absolute;
+    left: 30px;
+    bottom: 40px;
+    width: 40px;
+    height: 40px;
+    background: #3f61a6;
+    color: #ffffff;
+    border-radius: 50%;
+    line-height: 40px;
+    text-align: center;
+    box-shadow: 1px 1px 6px rgba(0, 0, 0, 0.6);
+}
 .mailTopBar {
     position: relative;
     display: flex;
@@ -665,6 +695,7 @@ export default {
         right: 10px;
         z-index: 20;
         background: #fff;
+        border-radius: 10px;
         box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.4);
     }
 }
@@ -822,7 +853,7 @@ export default {
         width: 636px;
         padding-bottom: 100px;
         overflow: hidden;
-        > div {
+        .item {
             width: 626px;
             height: 34px;
             background: #ffffff;

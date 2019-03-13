@@ -1,30 +1,44 @@
 <template>
     <div class="contain clearfix">
-        <div class="bl fl" :style="mainStyle">
+        <div class="bl fl"
+             :style="mainStyle">
             <div class="search-f">
-                <input type="text" @focus="foucus" placeholder="搜索好友" v-model="searchVal" />
-                <span class="search-icon" :class="{'focusIcon':focusIcon}" @click="__searchF"></span>
+                <input type="text"
+                       @focus="foucus"
+                       :placeholder="$t('group.placeholder1')"
+                       v-model="searchVal" />
+                <span class="search-icon"
+                      :class="{'focusIcon':focusIcon}"
+                      @click="__searchF"></span>
             </div>
             <div class="f-list">
-                <div v-for="(item,index) in fList" :key="index" class="clearfix">
+                <div v-for="(item,index) in fList"
+                     :key="index"
+                     class="clearfix">
                     <div>
                         <img src="./img/share-friend.png" />
                     </div>
                     <div>
                         {{item.nickname}}
                     </div>
-                    <input type="checkbox" v-model="item.isChecked" @click='selectF(item)' />
+                    <input type="checkbox"
+                           v-model="item.isChecked"
+                           @click='selectF(item)' />
                 </div>
             </div>
         </div>
 
-        <div class="br fl" :style="mainStyle">
+        <div class="br fl"
+             :style="mainStyle">
             <div class="br-title">
-                请选择需要添加的联系人
+                {{ $t('group.text')}}
+
             </div>
 
             <div class="f-list">
-                <div v-for="(item,index) in selectFList" :key="index" class="clearfix">
+                <div v-for="(item,index) in selectFList"
+                     :key="index"
+                     class="clearfix">
                     <div>
                         <img src="./img/share-friend.png" />
                     </div>
@@ -36,21 +50,21 @@
             </div>
 
             <div class="br-btns clearfix">
-                <div @click="__out">取消</div>
-                <div @click="__addGroup">确定</div>
+                <div @click="__out">{{$t('cancel')}}</div>
+                <div @click="__addGroup">{{$t('confirm')}}</div>
             </div>
         </div>
     </div>
 </template>
 
 <script>
-import { mapState, mapMutations } from "vuex";
+import { mapState, mapMutations } from 'vuex'
 export default {
-    props: ["groupName", "groupId", "file"],
+    props: ['groupName', 'groupId', 'file'],
     data() {
         return {
-            searchVal: "",
-            headImgUrl: "",
+            searchVal: '',
+            headImgUrl: '',
             req: {
                 currPage: 1,
                 pageSize: 10,
@@ -59,110 +73,110 @@ export default {
             focusIcon: false,
             fList: [],
             selectFList: []
-        };
+        }
     },
     watch: {
         groupName: {
             handler(newVal) {
-                console.log(newVal);
+                console.log(newVal)
             },
             deep: true
         },
         file: {
             handler(newVal) {
-                this.__addImg();
+                this.__addImg()
             },
             deep: true
         }
     },
     mounted() {
-        this.__friendsList();
+        this.__friendsList()
     },
     computed: {
         ...mapState({
             userInfo: state => state.UserInfo.userInfo
         }),
         mainStyle() {
-            if (this.groupId) return "height: 490px";
-            return "height: 400px";
+            if (this.groupId) return 'height: 490px'
+            return 'height: 400px'
         }
     },
     methods: {
-        ...mapMutations(["SET_GROUP_STATE", "GET_USER_INFO"]),
+        ...mapMutations(['SET_GROUP_STATE', 'GET_USER_INFO']),
         __out() {
-            this.SET_GROUP_STATE();
+            this.SET_GROUP_STATE()
         },
         foucus() {
-            this.focusIcon = true;
+            this.focusIcon = true
         },
         async __friendsList() {
-            this.req.userId = this.userInfo.userId;
-            const res = await this.api.friendsList(this.req);
+            this.req.userId = this.userInfo.userId
+            const res = await this.api.friendsList(this.req)
             res.data.forEach(val => {
-                this.$set(val, "isChecked", false);
-            });
-            this.fList = res.data;
+                this.$set(val, 'isChecked', false)
+            })
+            this.fList = res.data
         },
         async __searchF() {
             if (!this.searchVal) {
-                this.__friendsList();
+                this.__friendsList()
                 return
             }
-            const res = await this.api.searchFriendOrGroup(this.searchVal);
-            this.fList = res.data.friendList;
+            const res = await this.api.searchFriendOrGroup(this.searchVal)
+            this.fList = res.data.friendList
         },
         selectF(item) {
             if (!item.isChecked) {
                 var flag = this.selectFList.some(val => {
-                    return val.friendId == item.friendId;
-                });
-                if (!flag) this.selectFList.push(item);
+                    return val.friendId == item.friendId
+                })
+                if (!flag) this.selectFList.push(item)
             }
         },
         deleteF(index) {
             this.fList.forEach(val => {
                 if (this.selectFList[index].friendId == val.friendId) {
-                    val.isChecked = false;
+                    val.isChecked = false
                 }
-            });
-            this.selectFList.splice(index, 1);
+            })
+            this.selectFList.splice(index, 1)
         },
         async __addGroup() {
-            var arr = [];
+            var arr = []
             this.selectFList.forEach(val => {
                 var obj = {
                     groupMemberId: val.friendId,
                     memberName: val.nickname
-                };
-                arr.push(obj);
-            });
+                }
+                arr.push(obj)
+            })
 
             var para = {
                 groupLord: this.userInfo.userId,
                 groupName: this.groupName,
                 image: this.headImgUrl,
                 memberList: arr
-            };
+            }
 
             if (this.groupId) {
-                para.groupId = this.groupId;
-                var res = await this.api.groupInvite(para);
+                para.groupId = this.groupId
+                var res = await this.api.groupInvite(para)
             } else {
-                var res = await this.api.groupCreateAndAddMember(para);
+                var res = await this.api.groupCreateAndAddMember(para)
             }
             if (res.code == 0) {
-                this.__out();
+                this.__out()
             }
         },
         async __addImg() {
-            var formData = new FormData();
-            formData.append("file", this.file);
-            const res = await this.api.groupUploadImage(formData);
-            this.headImgUrl = res.data;
-            this.$emit("imgUrl", res.data);
+            var formData = new FormData()
+            formData.append('file', this.file)
+            const res = await this.api.groupUploadImage(formData)
+            this.headImgUrl = res.data
+            this.$emit('imgUrl', res.data)
         }
     }
-};
+}
 </script>
 
 <style lang="scss" scoped>
@@ -212,7 +226,7 @@ input {
     display: block;
     width: 14px;
     height: 14px;
-    background: url("./img/search-icon.png");
+    background: url('./img/search-icon.png');
     background-size: 100% 100%;
     position: absolute;
     top: 5px;

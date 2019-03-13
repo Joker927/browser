@@ -37,7 +37,7 @@ function checkStatus(response) {
     ) {
         let code = response.data.code
         if (code == 99 || code == 999) {
-            store.dispatch('REMOVE_USER_INFO').then(() => {
+            store.dispatch('LOG_OUT').then(() => {
                 router.replace({
                     path: '/login'
                 })
