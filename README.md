@@ -1,6 +1,6 @@
 # angel_explore
 
-> this is a expplore
+>这是一个使用electron-vue配合webpack打造的桌面浏览器客户端
 
 #### Build Setup
 
