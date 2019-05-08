@@ -3,7 +3,8 @@ const state = {
 
     groupState: false, //群组显示
     groupId: '', //群组ID
-    groupAdd: false //true:新建立群组、群组添加成员
+    groupAdd: false, //true:新建立群组、群组添加成员
+    loading: false
 }
 
 const mutations = {
@@ -13,6 +14,9 @@ const mutations = {
         } else {
             state.menuState = res
         }
+    },
+    SET_LOADING_STATE(state, bol) {
+        state.loading = bol
     },
     SET_GROUP_STATE(state, res) {
         if (res) {

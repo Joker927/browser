@@ -2,7 +2,8 @@ const state = {
     userInfo: {},
     token: '',
     seed: localStorage.getItem('SEED'),
-    addressList: JSON.parse(localStorage.getItem('ADDRESSLIST')) //用户账户地址列表
+    addressList: JSON.parse(localStorage.getItem('ADDRESSLIST')), //用户账户地址列表
+    lastAddress: localStorage.getItem('LASTADDRESS')
 }
 
 const mutations = {
@@ -14,7 +15,11 @@ const mutations = {
     SET_USER_INFO(state, res) {
         state.userInfo = res
         localStorage.setItem('USERINFO', JSON.stringify(res.userInfo))
-        localStorage.setItem('TOKEN', res.token)
+        localStorage.setItem('TOKEN', res.userInfo.token)
+    },
+    REFRESH_USER_INFO(state, res) {
+        state.userInfo = res
+        localStorage.setItem('USERINFO', JSON.stringify(res))
     },
     GET_USER_INFO(state) {
         let userInfo = localStorage.getItem('USERINFO')
@@ -28,6 +33,9 @@ const mutations = {
     SET_ADDRESS_LIST(state, res) {
         state.addressList = res
         localStorage.setItem('ADDRESSLIST', JSON.stringify(res))
+    },
+    SET_ADDRESS_LAST(state, res) {
+        localStorage.setItem('LASTADDRESS', res)
     },
     SET_SEED(state, res) {
         state.seed = res

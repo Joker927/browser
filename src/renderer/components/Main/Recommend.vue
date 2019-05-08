@@ -10,8 +10,9 @@
                     <router-link tag="div"
                                  class="info cp"
                                  :to="{name:'user',query:{id:item.userId}}">
-                        <img :src="item.avatar"
-                             alt="">
+                        <div class="img">
+                            <Avatar :src="item.avatar" />
+                        </div>
                         <p class="name">{{item.nickname}}</p>
                     </router-link>
                     <ButtonFirend :item='item'
@@ -28,8 +29,10 @@
                 <li class="lis"
                     v-for="(item,index) in recommendList[1]"
                     :key="index">
-                    <img :src="item.avatar"
-                         alt="">
+                    <div class="img">
+
+                        <Avatar :src="item.avatar" />
+                    </div>
                     <p class="name">{{item.groupName}}</p>
                     <ButtonGroup type='recommend'
                                  :item='item'
@@ -121,12 +124,23 @@ export default {
                 display: flex;
                 align-items: center;
             }
-            img {
+            .img {
                 width: 40px;
                 height: 40px;
                 border-radius: 50%;
                 margin-right: 10px;
-                background: #dbdcdc;
+                overflow: hidden;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                background: #eff0f0;
+                img {
+                    width: 100%;
+                    height: 100%;
+                    // margin: -2px;
+                    object-fit: cover;
+                    background: #eff0f0;
+                }
             }
             .name {
                 width: 140px;

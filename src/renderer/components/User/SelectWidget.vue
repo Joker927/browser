@@ -48,7 +48,7 @@
 
                         </div>
                         <div>
-                            {{item.nickname }}
+                            {{item.nickname ||item.userName}}
                         </div>
                         <span @click="__del(index,item)"></span>
                     </div>
@@ -69,6 +69,7 @@
 
 <script>
 import { mapState, mapMutations } from 'vuex'
+import { it } from 'date-fns/locale'
 export default {
     props: {
         type: {
@@ -81,7 +82,8 @@ export default {
             list: [],
             selectList: [],
             selectIds: [],
-            searchName: ''
+            searchName: '',
+            removeBlackList: [] //移除黑名单列表
         }
     },
 
@@ -110,17 +112,24 @@ export default {
             }, 300)
         },
         async __getList() {
+            let req = ''
+            if (this.type === 3) {
+                req = this.api.privacyBlacklist({
+                    userId: this.userInfo.userId
+                })
+            } else {
+                req = this.api.privacyDynamicviewList({
+                    type: this.type,
+                    userId: this.userInfo.userId
+                })
+            }
             const res = await Promise.all([
                 this.api.searchFriendAndGroup({
                     searchName: this.searchName
                 }),
-                this.api.privacyDynamicviewList({
-                    type: this.type,
-                    userId: this.userInfo.userId
-                })
+                req
             ])
 
-            console.log(res[1], 'res[1]')
             this.list = res[0].data.friendList
             this.selectList = res[1].data
             this.selectIds = this.selectList.map(item => item.friendId)
@@ -136,20 +145,27 @@ export default {
         },
         __select(item) {
             console.log(item, 'item')
-            if (!item.isChecked) {
-                this.selectList.push(item)
-                item.isChecked = true
+            if (this.type === 3) {
             } else {
-                item.isChecked = false
-                this.selectList = this.list.filter(item => item.isChecked)
+                if (!item.isChecked) {
+                    this.selectList.push(item)
+                    item.isChecked = true
+                } else {
+                    item.isChecked = false
+                    this.selectList = this.list.filter(item => item.isChecked)
+                }
             }
         },
         __del(index, item) {
-            this.list.forEach(ele => {
-                if (this.selectList[index].friendId == ele.friendId) {
-                    ele.isChecked = false
-                }
-            })
+            if (this.type === 3) {
+                this.removeBlackList.push(item.id)
+            } else {
+                this.list.forEach(ele => {
+                    if (this.selectList[index].friendId == ele.friendId) {
+                        ele.isChecked = false
+                    }
+                })
+            }
             this.selectList.splice(index, 1)
         },
         __diffArr(arr, arr1) {
@@ -160,41 +176,58 @@ export default {
             return tempArr
         },
         async __done() {
-            let listIds = this.selectList.map(item => {
-                return item.friendId
-            })
-            let addIds = this.__diffArr(listIds, this.selectIds)
-            let delIds = this.__diffArr(this.selectIds, listIds)
-
-            if (addIds.length) {
+            if (this.type === 3) {
                 let req = {
-                    friendIds: addIds,
-                    type: this.type,
+                    ids: this.removeBlackList,
                     userId: this.userInfo.userId
                 }
-                const res = await this.api.privacySetDynamicView(req)
+                const res = await this.api.privacyRemoveBlacklist(req)
+
                 if (res.code === 0) {
                     this.$Toast(this.$t('success'))
                     this.__out()
                 } else {
                     this.$Toast(res.msg)
                 }
-            }
+            } else {
+                let listIds = this.selectList.map(item => {
+                    return item.friendId
+                })
+                let addIds = this.__diffArr(listIds, this.selectIds)
+                let delIds = this.__diffArr(this.selectIds, listIds)
+                if (addIds.length) {
+                    let req = {
+                        friendIds: addIds,
+                        type: this.type,
+                        userId: this.userInfo.userId
+                    }
+                    const res = await this.api.privacySetDynamicView(req)
 
-            if (delIds.length) {
-                let req = {
-                    friendIds: delIds,
-                    type: this.type,
-                    userId: this.userInfo.userId
+                    if (res.code === 0) {
+                        this.$Toast(this.$t('success'))
+                        this.__out()
+                    } else {
+                        this.$Toast(res.msg)
+                    }
                 }
-                const res = await this.api.privacyRemoveDynamicView(req)
-                if (res.code === 0) {
-                    this.$Toast(this.$t('success'))
-                    this.__out()
-                } else {
-                    this.$Toast(res.msg)
+
+                if (delIds.length) {
+                    let req = {
+                        friendIds: delIds,
+                        type: this.type,
+                        userId: this.userInfo.userId
+                    }
+                    const res = await this.api.privacyRemoveDynamicView(req)
+
+                    if (res.code === 0) {
+                        this.$Toast(this.$t('success'))
+                        this.__out()
+                    } else {
+                        this.$Toast(res.msg)
+                    }
                 }
             }
+            console.log(111)
         }
     },
 
@@ -306,12 +339,9 @@ input {
             z-index: 1;
             background: #f1f1f1;
             img {
-                width: 100%;
-                // max-height: 100%;
-                position: absolute;
-                left: 50%;
-                top: 50%;
-                transform: translate(-50%, -50%);
+                object-fit: cover;
+                width: 30px;
+                height: 30px;
             }
         }
         > div:nth-child(2) {

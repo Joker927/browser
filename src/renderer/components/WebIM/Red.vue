@@ -2,10 +2,10 @@
     <div class="shade">
         <div class="contain">
             <div class="exit" @click="__exit"></div>
-            <div class="title">发红包</div>
+            <div class="title">{{$t('webim.sendRed')}}</div>
 
             <div class="clearfix num">
-                <div class="fl">金额</div>
+                <div class="fl" style="font-size:13px;">{{$t('wallet.money')}}</div>
                 <div class="fl">
                     <input type="text" v-model="num" />
                 </div>
@@ -19,21 +19,31 @@
                 </div>
             </div>
 
+            <div class="clearfix num" v-if="groupId">
+                <div class="fl" style="font-size:13px;">{{$t('wallet.nums')}}</div>
+                <div class="fl">
+                    <input type="text" v-model="nums" />
+                </div>
+                <div class="fl" >
+                </div>
+            </div>
+
             <div class="explain">
                 <textarea placeholder="说明" v-model="explain"></textarea>
             </div>
 
-            <div class="btn" @click="__sendRed">塞钱进钱包</div>
+            <div class="btn" @click="__sendRed">{{$t('webim.inRed')}}</div>
         </div>
     </div>
 </template>
 <script>
 import { mapState, mapMutations } from "vuex";
 export default {
-    props: ["userIdx", "userId", "userName"],
+    props: ["userIdx", "userId", "userName", "userType", "groupId"],
     data() {
         return {
-            num: "",
+            num: "", //金额
+            nums: "", //数量
             currentyShow: false,
             select: "",
             explain: "",
@@ -49,15 +59,14 @@ export default {
             userInfo: state => state.UserInfo.userInfo,
             addressList: state => state.UserInfo.addressList,
             seed: state => state.UserInfo.seed,
-            propertyList: state => state.Wallet.propertyList
+            propertyList: state => state.Wallet.propertyList,
+            lastAddress: state => state.UserInfo.lastAddress
         })
     },
     methods: {
+        ...mapMutations(["SET_MSG_List", "SET_LOADING_STATE"]),
         __exit() {
             this.$emit("changeStatus", false);
-        },
-        __sureTransfer() {
-            this.__transferToSeedAddress();
         },
         __select(item) {
             this.select = item;
@@ -72,20 +81,79 @@ export default {
         async __sendRed() {
             let param = {
                 amount: this.num,
-                collectionAddress: this.userInfo.collectionAddress,
+                collectionAddress: this.lastAddress,
                 contractAddress: this.select.address,
                 currency: this.select.name,
                 dec: this.explain,
-                num: this.num,
+                num: this.nums || 1,
                 receiverUserId: this.userId,
                 senderUserId: this.userInfo.userId,
                 type: 1
             };
-            const res = await this.api.sendRed(param);
-            this.$Toast(res.msg);
-            if (res.code == 0) {
-                this.__exit();
-            }
+            let transferParams = {
+                seed: this.seed,
+                addressList: this.addressList,
+                amount: this.num,
+                toAddress: "XYISCYBEVIORHMNV9JWUQLPQNZDZE9ABJFRRFHGUOXKGVLJOGIUFYCNTOMWJROZJI9TCTJMFBMJAXWMBC",
+                contractAddress: this.select.address
+            };
+            this.SET_LOADING_STATE(true);
+            this.api.transferToSeedAddress(transferParams).then(transferRes => {
+                if (transferRes.msg == "Success") {
+                    this.api.sendRed(param).then(res => {
+                        this.SET_LOADING_STATE(false);
+                        this.$Toast(res.msg);
+                        if (res.code == 0) {
+                            var obj = {
+                                type: 0,
+                                messageType: 7,
+                                msg: {
+                                    id: res.data,
+                                    toNickname: this.userName,
+                                    amount: this.num,
+                                    currency: this.select.name,
+                                    remark: this.explain || "恭喜发财",
+                                    senderUserName: this.userInfo.nickname
+                                }
+                            };
+
+                            var messageType = {
+                                id: res.data,
+                                remark: this.explain || "恭喜发财",
+                                currency: this.select.name,
+                                amount: this.num,
+                                toNickname: this.userName,
+                                type: 0,
+                                senderUserName: this.userInfo.nickname
+                            };
+                            let params = {
+                                body: JSON.stringify(messageType),
+                                fromUserId: this.userInfo.userId,
+                                messageType: 7,
+                                time: 0,
+                                toUserId: this.userId,
+                                type: "chat"
+                            };
+                            if (this.userType == 'group') {
+                                params.type = "groupchat";
+                                params.toUserId = this.groupId;
+                                this.api.sendGroupMessage(params);
+                            } else {
+                                this.api.sendMessage(params);
+                            }
+                            this.SET_MSG_List({
+                                index: this.userIdx,
+                                msg: obj
+                            });
+                            this.SET_LOADING_STATE(false);
+                            this.__exit();
+                        }
+                    });
+                } else {
+                    this.SET_LOADING_STATE(false);
+                    this.$Toast(transferRes.msg);
+                }
+            });
         }
     }
 };
@@ -102,7 +170,7 @@ export default {
 }
 .contain {
     width: 90%;
-    height: 74%;
+    height: 84%;
     background: #fff;
     margin: 0 auto;
     padding-top: 1px;
@@ -159,10 +227,10 @@ export default {
     }
 }
 .explain {
+    margin-left: 4px;
     textarea {
         width: 90%;
         resize: none;
-        margin-left: 5%;
         margin-top: 20px;
         outline: none;
         border: none;

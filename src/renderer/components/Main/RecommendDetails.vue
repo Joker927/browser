@@ -7,8 +7,9 @@
                 <li class="lis"
                     v-for="(item,index) in recommendList"
                     :key="index">
-                    <img :src="item.avatar"
-                         alt="">
+                    <Avatar @click="__jump(item)"
+                            :src="item.avatar"
+                            class="cp" />
                     <p class="name">{{item.nickname}}</p>
                     <ButtonFirend :item='item'
                                   type='recommend'></ButtonFirend>
@@ -22,8 +23,7 @@
                 <li class="lis"
                     v-for="(item,index) in recommendList"
                     :key="index">
-                    <img :src="item.avatar"
-                         alt="">
+                    <Avatar :src="item.avatar" />
                     <p class="name">{{item.groupName}}</p>
                     <ButtonGroup :item='item'
                                  type='recommend'
@@ -38,7 +38,7 @@
 import { mapState } from 'vuex'
 import ButtonFirend from './ButtonFirend'
 import ButtonGroup from './ButtonGroup'
-import CheckMore from '@/components/Common/CheckMore'
+
 export default {
     data() {
         return {
@@ -49,7 +49,7 @@ export default {
             recommendList: []
         }
     },
-    components: { CheckMore, ButtonFirend, ButtonGroup },
+    components: { ButtonFirend, ButtonGroup },
     computed: {
         ...mapState({
             userInfo: state => state.UserInfo.userInfo
@@ -74,6 +74,15 @@ export default {
             }
             const res = await this.api.friendeAdd(data)
             this.$set(item, 'flag', true)
+        },
+        __jump(item) {
+            this.$router.push({
+                name: 'user',
+                query: {
+                    id: item.userId,
+                    is: item.isFriend
+                }
+            })
         }
     },
     watch: {

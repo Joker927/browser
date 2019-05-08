@@ -6,10 +6,11 @@
                 <div class="fr" @click='SET_ADDPROPERTY_STATE'>{{$t('wallet.add')}}</div>
             </div>
             <div class="list">
-                <div v-for="(item,index) in propertyList" :key="index">
-                    <img src="./img/gitium@3x.png" class="fl">
+                <div v-for="(item,index) in propertyList" :key="index" @click="__goDetail(item)">
+                    <img :src="item.logoUrl" v-if="item.logoUrl" class="fl">
+                    <img src="./img/gitium@3x.png" v-else class="fl">
                     <span>{{item.name}}</span>
-                    <div class="fr bt" @click='__goRecharge(item)'>{{$t('wallet.gotopup')}}</div>
+                    <div class="fr bt" @click.stop='__goRecharge(item)'>{{$t('wallet.gotopup')}}</div>
                     <div class="fr up">{{item.totalValue}}</div>
                 </div>
             </div>
@@ -18,7 +19,7 @@
         <div v-show='rechargeShow'>
             <div class="title clearfix">
                 <div class="fl">{{$t('wallet.topup')}}</div>
-                <div class="fr" @click="__jump('/bill')">{{$t('wallet.topuphistory')}}</div>
+                <div class="fr" @click="__jump('/Recharge')">{{$t('wallet.topuphistory')}}</div>
             </div>
             <div class="recharge">
                 <div class="info clearfix">
@@ -64,7 +65,7 @@
                 <div class="input clearfix">
                     <div>{{$t('wallet.checkoutAddress')}}</div>
                     <div class="fl">
-                        <textarea :value='userInfo.collectionAddress'></textarea>
+                        <textarea :value='lastAddress'></textarea>
                     </div>
                 </div>
                 <div class="input clearfix">
@@ -104,7 +105,8 @@ export default {
             inputPaymentAddress: "", //用户付款地址
             inputTel: "",
             url: "",
-            rate: "" //汇率
+            rate: "", //汇率
+            chargeCurrentGitInfo: '' //充值币种的git信息
         };
     },
     computed: {
@@ -112,6 +114,7 @@ export default {
             userInfo: state => state.UserInfo.userInfo,
             seed: state => state.UserInfo.seed,
             addressList: state => state.UserInfo.addressList,
+            lastAddress: state => state.UserInfo.lastAddress,
             propertyList: state => state.Wallet.propertyList
         })
     },
@@ -131,16 +134,25 @@ export default {
         __jump(w) {
             this.$router.push(w);
         },
+        __goDetail(item) {
+            this.$router.push({
+                name: "currencyDetail",
+                params: {
+                    name: item.name,
+                    currency: item.address
+                }
+            });
+        },
         //获取可充值币种列表
         async __getCanRechargeCurrencyList() {
             const res = await this.api.getCanRechargeCurrencyList();
             this.canRechargeCurrencyList = res.data;
             this.selectC1 = res.data[0];
+            this.__getCuurrercyList();
         },
         __goRecharge(item) {
             this.selectC2 = item;
             this.rechargeShow = true;
-            this.__calcRate();
         },
         //获取币种列表
         async __getCuurrercyList() {
@@ -148,10 +160,17 @@ export default {
             this.currencyList = res.data;
             this.__calcRate();
         },
-        __calcRate() {
-            let num1 = Number(this.selectC1.rate);
-            let num2 = Number(this.selectC2.rate);
-            this.rate = num2 / num1;
+        async __calcRate() {
+            this.currencyList.forEach(val => {
+                if (this.selectC1.symbol == val.symbol) {
+                    this.chargeCurrentGitInfo = val;
+                }
+            })
+            const res = await this.api.seedGetRechargeRate({
+                srcCurrencies: [this.selectC2.address],
+                destCurrency: this.chargeCurrentGitInfo.address
+            });
+            this.rate = 1/(res.data[this.selectC2.address] * Math.pow(10, this.selectC2.decimals-this.chargeCurrentGitInfo.decimals));
             this.__calcInput2Val();
         },
         __calcInput2Val() {
@@ -222,7 +241,6 @@ export default {
                     }
                 });
             });
-
             this.SET_PROPERTY_LIST(arr2);
         }
     }
@@ -243,6 +261,7 @@ export default {
     > div:last-child {
         color: #3f61a6;
         font-size: 14px;
+        cursor: pointer;
     }
 }
 .list {
@@ -262,6 +281,7 @@ export default {
             color: #fff;
             margin-top: 28px;
             text-align: center;
+            cursor: pointer;
         }
         .up {
             margin-right: 16px;

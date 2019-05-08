@@ -9,9 +9,9 @@
                 <div class="fl">
                     <input type="text" :placeholder="$t('wallet.placeholder')" v-model="input1" @focus="__focus(1)" />
                     <div class="option1" v-if="options1Show">
-                        <div @click="__select(1,'按次收费')">{{$t('wallet.way1')}}</div>
-                        <div @click="__select(1,'按月收费')">{{$t('wallet.way2')}}</div>
-                        <div @click="__select(1,'按年收费')">{{$t('wallet.way3')}}</div>
+                        <div @click="__select(1, $t('wallet.way1'))">{{$t('wallet.way1')}}</div>
+                        <div @click="__select(1, $t('wallet.way2'))">{{$t('wallet.way2')}}</div>
+                        <div @click="__select(1, $t('wallet.way3'))">{{$t('wallet.way3')}}</div>
                     </div>
                 </div>
             </div>
@@ -83,7 +83,7 @@ export default {
                 id: 1,
                 price: this.input2
             };
-            const res = await this.api.snsWorkSet(params);
+            const res = await this.api.snsWorkSet({priceList:[params]});
             this.$Toast(res.msg)
         }
     },

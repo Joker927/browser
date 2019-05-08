@@ -28,10 +28,19 @@ const state = {
         left: 0
     },
     collectBtnState: false,
-    collectSourse: null
+    collectSourse: null,
+    viewDynamicId: null, //查看转发动态id
+    random: 0, //多次点击弹出窗口
+    zIndex: 1000,
+    previewState: false,
+    previewImgInfo: ''//预览图片信息
 }
 
 const mutations = {
+    SET_PREVIEWIMG_STATE(state,res) {
+        state.previewState = !state.previewState;
+        if (res) state.previewImgInfo = res;
+    },
     SET_FEED_MENU_STATE(state, res) {
         if (res && state.menuState === res) {
             state.menuState = null
@@ -47,7 +56,10 @@ const mutations = {
         state.accessMenuPermission = res
     },
     SET_FEED_PARENT_DYNAMIC(state, res) {
-        let item = JSON.parse(JSON.stringify(res.item))
+        let item = state.dynamicItem
+        if (res.item) {
+            item = JSON.parse(JSON.stringify(res.item))
+        }
         let id = res.id
         state.dynamicItem = item
         state.parentDynamicId = id
@@ -86,13 +98,18 @@ const mutations = {
     SET_FEED_PREVIEW(state, res) {
         state.previewList = res.list
         state.previewCurrent = res.index
+    },
+    SET_FEED_VIEW_DYNAMIC_ID(state, res) {
+        state.viewDynamicId = res.id
+        state.random = res.t
+    },
+    SET_FEED_ZINDEX(state, res) {
+        state.zIndex++
     }
 }
 
 const actions = {
-    someAsyncTask({
-        commit
-    }) {
+    someAsyncTask({ commit }) {
         // do something async
         commit('INCREMENT_MAIN_COUNTER')
     }

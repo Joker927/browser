@@ -31,8 +31,8 @@
                          @show='__editMail'
                          :item='emailItem'></Details>
             </div>
+            <SideButtom class="abs"></SideButtom>
         </div>
-        <SideButtom class="abs"></SideButtom>
 
         <Modal v-if="mailListState"
                :name='name'></Modal>
@@ -111,7 +111,6 @@ export default {
                     totalCount: res.data.totalCount,
                     totalPage: res.data.totalPage
                 }
-
                 this.mails = res.data.list
                 this.mails.forEach(item => {
                     item.emailContentStr = item.emailContent.replace(
@@ -197,6 +196,9 @@ export default {
         __mailSelected() {},
         __change(state) {
             this.visible = state
+            if (!state) {
+                this.__refresh()
+            }
         },
         __selectAll(state) {
             this.mails.forEach((item, index) => {
@@ -206,11 +208,18 @@ export default {
         },
         __getLoaclMails() {
             let userMail = localStorage.getItem('USERMAIL')
-            console.log(typeof userMail)
             let userId = this.userInfo.userId
             if (typeof userMail === 'string') {
                 userMail = JSON.parse(userMail)
                 if (userId in userMail) {
+                    if (!this.isAll) {
+                        this.subInfo = {
+                            currPage: 1,
+                            totalCount: userMail[userId].length,
+                            totalPage: userMail[userId].length
+                        }
+                    }
+
                     return userMail[userId]
                 }
             }
@@ -233,19 +242,17 @@ export default {
             if (state === 'prev') {
                 this.currPage--
                 this.currPage = this.currPage <= 0 ? 1 : this.currPage
-                console.log(this.currPage)
-                this.__getDatas()
             } else if (state == 'next') {
                 this.currPage++
-                console.log(this.currPage)
-                this.__getDatas()
             }
+            this.__getDatas()
         },
         __refresh() {
             if (this.name === 'local') {
-                this.__localMail()
+                this.__getLoaclMails()
             } else {
                 this.__getDatas()
+                this.$bus.emit('refreshUnRead')
             }
         },
         __edit(state) {
@@ -273,6 +280,11 @@ export default {
 </script>
 
 <style  lang='scss' scoped>
+@media screen and (min-width: 1390px) {
+    .mailWrap {
+        margin: 0 auto;
+    }
+}
 .mailWrap {
     position: absolute;
     top: 0;
@@ -280,18 +292,24 @@ export default {
     left: 0;
     right: 0;
     width: 100%;
-    max-width: 1156px;
-    background: #ffffff;
+
     display: flex;
-    margin: 0 auto;
+    // margin: 0 auto;
     z-index: 10;
+    max-width: 1156px;
+    box-sizing: content-box;
+    padding-right: 210px;
+    // opacity: 0.3;
 }
 .mailContent {
     position: absolute;
     top: 0;
-    bottom: 30px;
+    // bottom: 30px; TODO: 不清楚为啥设置30
+    bottom: 0px;
     left: 210px;
+    max-width: calc(1166px - 210px);
     width: calc(100% - 210px);
+    background: #ffffff;
 }
 .scrollWrap {
     position: absolute;
@@ -300,6 +318,7 @@ export default {
     left: 0;
     right: 0;
     overflow: hidden;
+    background: #ffffff;
 }
 .mailDetails {
     position: absolute;

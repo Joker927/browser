@@ -1,46 +1,30 @@
 <template>
     <div class="mask">
-        <div class="box"
-             v-if="groupAdd">
-            <div class="title"
-                 v-if="!groupId">{{$t('group.create')}}
-                <span class="exit"
-                      @click='__out'></span>
+        <div class="box" v-if="groupAdd">
+            <div class="title" v-if="!groupId">{{$t('group.create')}}
+                <span class="exit" @click='__out'></span>
             </div>
-            <div class="title"
-                 v-if="groupId">{{$t('group.add')}}
-                <span class="exit"
-                      @click='__out'></span>
+            <div class="title" v-if="groupId">{{$t('group.add')}}
+                <span class="exit" @click='__out'></span>
             </div>
 
-            <div class="name"
-                 v-if="!groupId">
+            <div class="name" v-if="!groupId">
                 <div class="fl">
-                    <img :src="imgSrc"
-                         v-if="imgSrc" />
-                    <input type="file"
-                           @change="chooseImg"
-                           id="fileId" />
+                    <img :src="imgSrc" v-if="imgSrc" />
+                    <input type="file" @change="chooseImg" id="fileId" />
+                    <p>上传群头像</p>
                 </div>
-                <input type="text"
-                       :placeholder="$t('group.placeholder2')"
-                       v-model="groupName" />
+                <input type="text" :placeholder="$t('group.name')" v-model="groupName" />
             </div>
 
             <div>
-                <FList :group-name="groupName"
-                       :group-id="groupId"
-                       :file="file"
-                       v-on:imgUrl="getImgUrl"></FList>
+                <FList :group-name="groupName" :group-id="groupId" :file="file" v-on:imgUrl="getImgUrl"></FList>
             </div>
         </div>
 
-        <div class="box"
-             v-if="!groupAdd"
-             style="width:422px;">
+        <div class="box" v-if="!groupAdd" style="width:422px;">
             <div class="title">{{$t('group.desc')}}
-                <span class="exit"
-                      @click='__out'></span>
+                <span class="exit" @click='__out'></span>
             </div>
 
             <div>
@@ -51,16 +35,16 @@
 </template>
 
 <script>
-import { mapState, mapMutations } from 'vuex'
-import FList from './FList'
-import FDetail from './FDetail'
+import { mapState, mapMutations } from "vuex";
+import FList from "./FList";
+import FDetail from "./FDetail";
 export default {
     data() {
         return {
-            groupName: '',
-            file: '',
-            imgSrc: ''
-        }
+            groupName: "",
+            file: "",
+            imgSrc: ""
+        };
     },
     components: {
         FList,
@@ -73,30 +57,30 @@ export default {
         })
     },
     mounted() {
-        console.log(this.groupId)
-        console.log(this.groupAdd)
+        console.log(this.groupId);
+        console.log(this.groupAdd);
     },
     watch: {
         groupId: {
             handler(newVal) {
-                console.log(this.groupId)
+                console.log(this.groupId);
             },
             deep: true
         }
     },
     methods: {
-        ...mapMutations(['SET_GROUP_STATE']),
+        ...mapMutations(["SET_GROUP_STATE"]),
         __out() {
-            this.SET_GROUP_STATE()
+            this.SET_GROUP_STATE();
         },
         chooseImg() {
-            this.file = document.getElementById('fileId').files[0]
+            this.file = document.getElementById("fileId").files[0];
         },
         getImgUrl(val) {
-            this.imgSrc = val
+            this.imgSrc = val;
         }
     }
-}
+};
 </script>
 
 <style lang="scss" scoped>
@@ -108,6 +92,7 @@ export default {
     width: 100%;
     height: 100%;
     background: rgba(0, 0, 0, 0.4);
+    cursor: pointer;
 }
 
 .box {
@@ -132,7 +117,7 @@ export default {
     width: 21px;
     height: 21px;
     display: block;
-    background: url('./img/popup_cancel@3x.png');
+    background: url("./img/popup_cancel@3x.png");
     background-size: 100% 100%;
     float: right;
     margin: 15px 20px;
@@ -143,7 +128,7 @@ export default {
     line-height: 90px;
     padding-left: 20px;
     border-bottom: 1px solid #dfdfe0;
-    input[type='text'] {
+    input[type="text"] {
         font-size: 14px;
         border: none;
         outline: none;
@@ -156,15 +141,26 @@ export default {
         width: 50px;
         height: 50px;
         position: relative;
-        background: url('./img/group_addPic@3x.png');
+        background: url("./img/group_addPic@3x.png");
         background-size: 100% 100%;
-        top: 20px;
+        top: 10px;
     }
-    input[type='file'] {
+    input[type="file"] {
         position: absolute;
         width: 50px;
         height: 50px;
         opacity: 0;
+    }
+    p{
+        position: absolute;
+        width: 80px;
+        text-align: center;
+        height: 20px;
+        line-height: 20px;
+        bottom: -25px;
+        left: -15px;
+        color: #999;
+        font-size: 12px;
     }
     img {
         position: absolute;

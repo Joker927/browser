@@ -1,17 +1,24 @@
 <template>
-    <div class="mask" v-if="rewardId">
+    <div class="mask"
+         v-if="rewardId"
+         :style="{zIndex:zIndex}">
         <div class="box">
             <div class="title">{{$t('main.reward')}}
-                <span class="exit" @click='__out'></span>
+                <span class="exit"
+                      @click='__out'></span>
             </div>
 
             <div class="contain clearfix">
                 <div class="clearfix input">
                     <div class="fl">{{$t('main.selectReward')}}</div>
                     <div class="fl">
-                        <div class="simulateInput" @click='scrollShow=true'>{{selected.name}}</div>
-                        <div class="scroll" v-if="scrollShow">
-                            <div v-for="(item,index) in currencyList" :key="index" @click='__select(item)'>
+                        <div class="simulateInput"
+                             @click='scrollShow=true'>{{selected.name}}</div>
+                        <div class="scroll"
+                             v-if="scrollShow">
+                            <div v-for="(item,index) in currencyList"
+                                 :key="index"
+                                 @click='__select(item)'>
                                 {{item.name}}
                             </div>
                         </div>
@@ -20,10 +27,12 @@
                 <div class="clearfix input">
                     <div class="fl">{{$t('main.inputRewardMoney')}}</div>
                     <div class="fl">
-                        <input type="text" v-model="inputMoney" />
+                        <input type="text"
+                               v-model="inputMoney" />
                     </div>
                 </div>
-                <div class="btn" @click="__configReward">
+                <div class="btn"
+                     @click="__configReward">
                     {{$t('confirm')}}
                 </div>
             </div>
@@ -32,59 +41,95 @@
 </template>
 
 <script>
-import { mapState, mapMutations } from "vuex";
+import { mapState, mapMutations } from 'vuex'
 export default {
     data() {
         return {
             currencyList: [],
             scrollShow: false,
-            selected: "",
-            inputMoney: ""
-        };
+            selected: '',
+            inputMoney: '',
+            otherInfo: ''
+        }
     },
     computed: {
         ...mapState({
             userInfo: state => state.UserInfo.userInfo,
+            addressList: state => state.UserInfo.addressList,
+            seed: state => state.UserInfo.seed,
             rewardId: state => state.Feed.rewardId,
             rewardItem: state => state.Feed.rewardItem,
+            zIndex: state => state.Feed.zIndex
         })
     },
     mounted() {
-        this.__getCuurrercyList();
+        this.__getCuurrercyList()
     },
     methods: {
-        ...mapMutations(["SET_FEED_REWARD"]),
+        ...mapMutations(['SET_FEED_REWARD', 'SET_LOADING_STATE']),
         //获取币种列表
         async __getCuurrercyList() {
-            const res = await this.api.getCuurrercyList();
-            this.currencyList = res.data;
-            this.selected = res.data[0];
+            const res = await this.api.getCuurrercyList()
+            this.currencyList = res.data
+            this.selected = res.data[0]
         },
         __select(item) {
-            this.selected = item;
-            this.scrollShow = false;
+            this.selected = item
+            this.scrollShow = false
         },
         __out() {
-            this.sureShow = false;
-            this.SET_FEED_REWARD({ item: {}, id: null });
+            this.sureShow = false
+            this.SET_FEED_REWARD({ item: {}, id: null })
         },
-        async __configReward() {
-            let price = null;
+        //获取对方用户信息
+        async __getUserInfo() {
+            const res = await this.api.userInfo({ id: this.rewardItem.userId })
+            this.otherInfo = res.data
+        },
+        __configReward() {
+            let price = null
             let params = {
                 currency: this.selected.name,
                 authorId: this.rewardItem.userId,
                 dynamicId: this.rewardId,
                 rewardAmount: this.inputMoney,
                 userId: this.userInfo.userId
-            };
-            const res = await this.api.snsRewardIns(params);
-            if (res.msg == 'success') {
-                this.__out();
             }
-            this.$Toast(res.msg);
+            let transferParams = {
+                seed: this.seed,
+                addressList: this.addressList,
+                amount: this.inputMoney,
+                contractAddress: this.selected.address
+            }
+            //获取对方用户信息
+            this.api.userInfo({ id: this.rewardItem.userId }).then(otherRes => {
+                //补充转账地址
+                transferParams.toAddress = otherRes.data.collectionAddress
+                //调用打赏接口
+                this.api.snsRewardIns(params).then(res => {
+                    if (res.msg == 'success') {
+                        this.SET_LOADING_STATE(true)
+                        //调用转账接口
+                        this.api
+                            .transferToSeedAddress(transferParams)
+                            .then(transferRes => {
+                                this.SET_LOADING_STATE(false)
+                                //成功后打赏数加1
+                                this.$bus.emit(
+                                    'add' + params.dynamicId,
+                                    params.dynamicId
+                                )
+                                this.__out()
+                                this.$Toast(transferRes.msg)
+                            })
+                    } else {
+                        this.$Toast(res.msg)
+                    }
+                })
+            })
         }
     }
-};
+}
 </script>
 
 <style lang="scss" scoped>
@@ -92,7 +137,6 @@ export default {
     position: fixed;
     top: 0;
     left: 0;
-    z-index: 999;
     width: 100%;
     height: 100%;
     background: rgba(0, 0, 0, 0.4);
@@ -120,7 +164,7 @@ export default {
     width: 21px;
     height: 21px;
     display: block;
-    background: url("./img/popup_cancel@3x.png");
+    background: url('./img/popup_cancel@3x.png');
     background-size: 100% 100%;
     float: right;
     margin: 15px 20px;

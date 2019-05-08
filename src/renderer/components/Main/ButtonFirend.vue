@@ -1,6 +1,7 @@
 <template>
 
-    <div class="reqBtn">
+    <div class="reqBtn"
+         :style="{zIndex:zIndex}">
         <span class="add cp NAV_MENU"
               v-if="!item.flag"
               @click="__add(item)">{{text}}</span>
@@ -8,7 +9,15 @@
               v-else>{{text1}}</span>
         <span class='ignore cp NAV_MENU'
               v-if="type=='request'&&!item.flag"
-              @click="__ignore(item)">{{$t('delete')}}</span>
+              @click="__changeConfirm(item,true)">{{$t('delete')}}</span>
+        <div class="confirm"
+             v-if="item.confirmState">
+            <p>{{$t('main.confirmTxt')}}</p>
+            <span class="add cp  NAV_MENU"
+                  @click="__ignore(item)">{{$t('main.confirm')}}</span>
+            <span class="ignore cp NAV_MENU"
+                  @click="__changeConfirm(item,false)">{{$t('cancel')}}</span>
+        </div>
     </div>
 
 </template>
@@ -28,7 +37,8 @@ export default {
     },
     data() {
         return {
-            text1: ''
+            text1: '',
+            zIndex: 1
         }
     },
     components: {},
@@ -62,6 +72,7 @@ export default {
             }
             this.$set(item, 'flag', true)
             this.SET_BADGE_COUNT()
+            this.$bus.emit('getData')
         },
         async __ignore(item) {
             let data = {
@@ -71,6 +82,10 @@ export default {
             this.$set(item, 'flag', true)
             this.text1 = this.$t('main.rejected')
             this.SET_BADGE_COUNT()
+        },
+        __changeConfirm(item, state) {
+            this.zIndex++
+            this.$set(item, 'confirmState', state)
         }
     },
     created() {}
@@ -79,6 +94,7 @@ export default {
 
 <style lang='scss' scoped>
 .reqBtn {
+    position: relative;
     display: flex;
     .add,
     .ignore {
@@ -100,6 +116,23 @@ export default {
     .active {
         background: #dbdcdc;
         color: #000;
+    }
+}
+.confirm {
+    position: absolute;
+    top: -10px;
+    left: -20px;
+    text-align: center;
+    width: 140px;
+    background: #ffffff;
+    box-shadow: 0px 0px 4px rgba($color: #000000, $alpha: 0.5);
+    padding: 5px;
+    > p {
+        display: block;
+    }
+    span {
+        display: inline-block;
+        margin-left: 1px;
     }
 }
 </style>

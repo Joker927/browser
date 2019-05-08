@@ -28,8 +28,8 @@
 
                                 <p class="selected cp"
                                    v-if="loginForm.loginType==='1'"
-                                   @click="__selectVisible('selectShow')">{{defaultAreaCode.value}}
-                                    {{defaultAreaCode.code}}</p>
+                                   @click="__selectVisible('selectShow')">{{defaultAreaCode.value}} {{defaultAreaCode.code}}
+                                </p>
                                 <input type="text"
                                        v-else
                                        v-model="accountNo"
@@ -107,8 +107,8 @@
 
                             <p class="selected cp"
                                v-if="registerForm.registerType==='1'"
-                               @click="__selectVisible('selectShow1')">{{defaultAreaCode.value}}
-                                {{defaultAreaCode.code}}</p>
+                               @click="__selectVisible('selectShow1')">{{defaultAreaCode.value}} {{defaultAreaCode.code}}
+                            </p>
                             <input type="text"
                                    v-else
                                    v-model="accountNo1"
@@ -138,12 +138,14 @@
                     <div class="m-10">
                         <button style="float:right;"
                                 class="cp"
+                                :class="{'b-blue':!isEmpty}"
                                 @click="__regCode">{{txt1}}</button>
                         <div style="clear:both;"></div>
                     </div>
 
                     <div class="m-10">
-                        <div class="input-title">{{$t('login.placeholder3')}}</div><input v-model="registerForm.code"
+                        <div class="input-title">{{$t('login.placeholder3')}}</div>
+                        <input v-model="registerForm.code"
                                type="text" />
                     </div>
                     <div class="m-10">
@@ -170,7 +172,11 @@
                         <input type="checkbox"
                                class="checkbox"
                                v-model="checked" />
-                        <span v-html="$t('login.tips1')"></span>
+                        <span>
+                            {{$t('login.tips1[0]')}} {{$t('login.tips1[1]')}} {{$t('login.tips1[2]')}}{{$t('login.tips1[3]')}}
+                            <span class="highlight cp"
+                                  @click="__changeMaskVisible"> {{$t('login.tips1[4]')}}</span> {{$t('login.tips1[5]')}}{{$t('login.tips1[6]')}} {{$t('login.tips1[7]')}}
+                        </span>
                     </div>
 
                     <div class="m-10">
@@ -182,12 +188,27 @@
                 </div>
             </div>
         </div>
+        <div class="mask"
+             v-if="maskVisible">
+            <div class="text">
+                <div class="x"
+                     @click="__changeMaskVisible">x</div>
+                <h3>{{$t('login.liability[0]')}}</h3>
+                <p>
+                    {{$t('login.liability[1]')}}
+                </p>
+                <p>
+                    {{$t('login.liability[2]')}}
+                </p>
+            </div>
+        </div>
     </div>
 </template>
 
 <script>
 import { mapMutations, mapActions } from 'vuex'
 import createSeed from 'gitium.seed.js'
+import md5 from 'js-md5'
 export default {
     data() {
         return {
@@ -198,17 +219,20 @@ export default {
             registerForm: {
                 accountNo: '', // 账号
                 code: '', //验证码
-                collectionAddress: '', //账户地址
+                collectionAddress: '', //钱包地址
                 confirmPassword: '', // 确认密码 ,
                 nickname: '', //昵称 ,
                 password: '', //密码 ,
                 registerType: '0', // 0：邮箱注册 1：手机号注册 ,
-                userName: '' //用户名
+                // userName: '' //用户名
+                secretKey: ''
             },
             loginForm: {
+                collectionAddress: '',
                 accountNo: '',
                 loginType: '0',
-                password: ''
+                password: '',
+                random: new Date().getTime()
             },
             areaCode: '',
             defaultAreaCode: '',
@@ -234,14 +258,27 @@ export default {
                 }
             ],
             eyes: [],
-            seedAddress: [] //用户账户地址
+            maskVisible: false
         }
     },
     components: {},
-    computed: {},
+    computed: {
+        isEmpty() {
+            if (this.accountNo1.trim() !== '' && this.timer === null) {
+                return false
+            }
+            return true
+        }
+    },
     methods: {
         ...mapActions(['SET_USER_INFO', 'SET_BADGE_COUNT']),
-        ...mapMutations(['GET_USER_INFO', 'SET_ADDRESS_LIST', 'SET_SEED']),
+        ...mapMutations([
+            'GET_USER_INFO',
+            'SET_ADDRESS_LIST',
+            'SET_ADDRESS_LAST',
+            'SET_SEED',
+            'SET_LOADING_STATE'
+        ]),
 
         __watchPwd(index) {
             if (this.passwordType[index]['flag']) {
@@ -264,16 +301,41 @@ export default {
         __jump(w) {
             this.$router.push(w)
         },
-        //根据seed获取地址列表
-        async __getAddressBySeed(seed) {
+        //根据seed获取地址列表,type==0为注册,type==1为登录
+        async __getAddressBySeed(type) {
+            //生成种子
+            let seedData = ''
+            if (type == 0) {
+                seedData = createSeed(
+                    this.registerForm.accountNo,
+                    this.registerForm.password
+                )
+            } else {
+                seedData = createSeed(
+                    this.loginForm.accountNo,
+                    this.loginForm.password
+                )
+            }
+
             let params = {
-                seed
+                seed: seedData.cyptoSeed
             }
             const res = await this.api.getAddressBySeed(params)
-            this.seedAddress = res.data.lastAddress
+            this.SET_SEED(seedData.cyptoSeed)
             this.SET_ADDRESS_LIST(res.data.newAddressList)
+            this.SET_ADDRESS_LAST(res.data.lastAddress)
+            this.registerForm.secretKey = md5(
+                seedData.cyptoSeed + res.data.newAddressList[0]
+            ).toUpperCase()
+            this.loginForm.sign = md5(
+                md5(
+                    seedData.cyptoSeed + res.data.newAddressList[0]
+                ).toUpperCase() + this.loginForm.random
+            ).toUpperCase()
+            return res
         },
         async __regCode() {
+            console.log(this.defaultAreaCode, ' this.defaultAreaCode')
             let areaCode = this.defaultAreaCode.value.substr(1)
             let req = {}
             if (this.accountNo1.trim() == '') {
@@ -308,48 +370,92 @@ export default {
             this.$Toast(res.msg)
         },
         async __register() {
-            let seedData = createSeed(
-                this.accountNo,
-                this.registerForm.password
-            )
-            this.__getAddressBySeed(seedData.cyptoSeed)
-            this.registerForm.collectionAddress = this.seedAddress
-
+            if (this.registerForm.nickname.trim() === '') {
+                this.$Toast(this.$t('login.toast6'))
+                return
+            }
+            if (this.registerForm.code.trim() === '') {
+                this.$Toast(this.$t('login.toast7'))
+                return
+            }
+            if (
+                this.registerForm.password != this.registerForm.confirmPassword
+            ) {
+                this.$Toast(this.$t('login.passwordNoAlike'))
+                return
+            }
             if (!this.checked) {
                 this.$Toast(this.$t('login.toas2'))
                 return
             }
+            if (this.accountNo1.trim() === '') {
+                this.$Toast(this.$t('login.toast'))
+                return
+            }
+            if (this.registerForm.password.trim() === '') {
+                this.$Toast(this.$t('login.toast5'))
+                return
+            }
+            this.SET_LOADING_STATE(true)
+
             let areaCode = this.defaultAreaCode.value.substr(1)
             if (this.registerForm.registerType === '1') {
-                this.registerForm.accountNo = areaCode + '+' + this.accountNo1
+                this.registerForm.accountNo = '+' + areaCode + this.accountNo1
             } else {
                 this.registerForm.accountNo = this.accountNo1
             }
 
-            const res = await this.api.register(this.registerForm)
-            this.$Toast(res.msg)
+            this.__getAddressBySeed(0).then(seedRes => {
+                this.registerForm.collectionAddress =
+                    seedRes.data.newAddressList[0]
+                this.api.register(this.registerForm).then(res => {
+                    this.SET_LOADING_STATE(false)
+
+                    this.$Toast(res.msg)
+                })
+            })
         },
         async __login() {
-            let seedData = createSeed(this.accountNo, this.loginForm.password)
-            this.__getAddressBySeed(seedData.cyptoSeed)
-            this.SET_SEED(seedData.cyptoSeed)
+            if (this.accountNo.trim() === '') {
+                this.$Toast(this.$t('login.toast'))
+                return
+            } else if (this.loginForm.password.trim() === '') {
+                this.$Toast(this.$t('login.toast5'))
+                return
+            }
+
+            this.SET_LOADING_STATE(true)
 
             let areaCode = this.defaultAreaCode.value.substr(1)
             if (this.loginForm.loginType === '1') {
-                this.loginForm.accountNo = areaCode + '+' + this.accountNo
+                this.loginForm.accountNo = '+' + areaCode + this.accountNo
             } else {
                 this.loginForm.accountNo = this.accountNo
             }
-            const res = await this.api.login(this.loginForm)
-            if (res.code == 0) {
-                this.SET_USER_INFO(res.data).then(() => {
-                    this.GET_USER_INFO()
-                    this.__jump('/home')
-                    this.SET_BADGE_COUNT()
+
+            this.__getAddressBySeed(1).then(seedRes => {
+                this.loginForm.collectionAddress =
+                    seedRes.data.newAddressList[0]
+                this.api.login(this.loginForm).then(res => {
+                    if (res.code == 0) {
+                        this.SET_USER_INFO(res.data).then(() => {
+                            this.api
+                                .startListener({
+                                    userId: res.data.userInfo.userId
+                                })
+                                .then(() => {
+                                    this.SET_LOADING_STATE(false)
+                                    this.GET_USER_INFO()
+                                    this.__jump('/home')
+                                    this.SET_BADGE_COUNT()
+                                })
+                        })
+                    } else {
+                        this.$Toast(res.msg)
+                        this.SET_LOADING_STATE(false)
+                    }
                 })
-            } else {
-                this.$Toast(res.msg)
-            }
+            })
         },
         __selectVisible(s) {
             this[s] = !this[s]
@@ -364,6 +470,7 @@ export default {
         },
         __tab1(v) {
             this.registerForm.registerType = v
+            this.accountNo1 = ''
         },
         async __forgetPwd() {
             if (this.accountNo.trim() == '') {
@@ -371,7 +478,8 @@ export default {
             } else {
                 let areaCode = this.defaultAreaCode.value.substr(1)
                 if (this.loginForm.loginType === '1') {
-                    this.loginForm.accountNo = areaCode + '+' + this.accountNo
+                    this.loginForm.accountNo =
+                        '+' + areaCode + '' + this.accountNo
                 } else {
                     let r = /\w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*/
                     if (!r.test(this.accountNo)) {
@@ -399,6 +507,9 @@ export default {
                     this.timer = null
                 }
             }, 1000)
+        },
+        __changeMaskVisible() {
+            this.maskVisible = !this.maskVisible
         }
     },
     watch: {
@@ -415,6 +526,40 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+.mask {
+    position: fixed;
+    top: 80px;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 1000;
+    background: rgba(0, 0, 0, 0.8);
+    .text {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        width: 600px;
+        padding: 20px;
+        margin: 0 auto;
+        transform: translate(-50%, -50%);
+        background: #fff;
+        > p {
+            margin-top: 20px;
+        }
+        .x {
+            position: absolute;
+            right: 0;
+            top: 0;
+            width: 40px;
+            height: 40px;
+            color: #fff;
+            font-size: 30px;
+            line-height: 32px;
+            text-align: center;
+            background: #3e63a5;
+        }
+    }
+}
 .m-10 {
     margin-top: 10px;
 }

@@ -16,7 +16,8 @@
                      :key="index"
                      class="clearfix">
                     <div>
-                        <img src="./img/share-friend.png" />
+                        <img :src="item.avatar" v-if="item.avatar"/>
+                        <img src="./img/icon.png" v-else/>
                     </div>
                     <div>
                         {{item.nickname}}
@@ -40,7 +41,8 @@
                      :key="index"
                      class="clearfix">
                     <div>
-                        <img src="./img/share-friend.png" />
+                        <img :src="item.avatar" v-if="item.avatar"/>
+                        <img src="./img/icon.png" v-else/>
                     </div>
                     <div>
                         {{item.nickname}}

@@ -11,6 +11,7 @@
 
 <script>
 import { mapState, mapMutations } from 'vuex'
+import { closestIndexTo } from 'date-fns/esm'
 
 export default {
     data() {
@@ -61,7 +62,7 @@ export default {
             const res = await this.api.snsCollectSave(req)
             console.log(res, 'snsCollectSave')
             if (res.code === 0) {
-                this.$Toast('收藏成功')
+                this.$Toast(this.$t('success'))
                 this.SET_FEED_COLLECT_BTN({
                     state: false,
                     style: {

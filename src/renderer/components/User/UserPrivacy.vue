@@ -10,6 +10,11 @@
             </div>
             <ul class="list">
                 <li>
+                    <p>{{$t('user.text7')}}</p>
+                    <span class="arrow cp"
+                          @click="__setReqType(3)"></span>
+                </li>
+                <li>
                     <p>{{$t('user.text2')}}</p>
                     <span class="arrow cp"
                           @click="__setReqType(2)"></span>
@@ -82,19 +87,21 @@ export default {
             routerName: '',
             reqType: 1,
             menuType: null,
-            showWidget: false,
-            rangeTexts: [
-                this.$t('user.all'),
-                this.$t('user.threedays'),
-                this.$t('user.halfayear')
-            ]
+            showWidget: false
         }
     },
     components: { SelectWidget },
     computed: {
         ...mapState({
             userInfo: state => state.UserInfo.userInfo
-        })
+        }),
+        rangeTexts(){
+           return [
+            this.$t('user.all'),
+            this.$t('user.threedays'),
+            this.$t('user.halfayear')
+        ]
+        }
     },
     filters: {
         rangeText(value, arr) {

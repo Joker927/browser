@@ -14,7 +14,8 @@
 
                     <div class="list">
                         <div class="list-item clearfix" v-for="(item,index) in currencyList" :key="index">
-                            <div class="fl"></div>
+                            <img class="fl" :src="item.logoUrl" v-if="item.logoUrl"/>
+                            <img src="./img/gitium@3x.png" v-else class="fl">
                             <span>{{item.name}}</span>
                             <input type="checkbox" class="fr" v-model="item.isChecked" @click='__selectC(item)' />
                         </div>
@@ -27,7 +28,8 @@
                     </div>
                     <div class="list">
                         <div class="list-item clearfix" v-for="(item,index) in selectCList" :key="index">
-                            <div class="fl"></div>
+                            <img class="fl" :src="item.logoUrl" v-if="item.logoUrl"/>
+                            <img src="./img/gitium@3x.png" v-else class="fl">
                             <span>{{item.name}}</span>
                             <span @click="__deleteF(index)" class="deleteC"></span>
                         </div>
@@ -51,6 +53,7 @@ export default {
             searchVal: "",
             focusIcon: false,
             currencyList: [],
+            originArr: [], //储存原始的币种列表数据
             selectCList: []
         };
     },
@@ -67,6 +70,9 @@ export default {
         //获取币种列表
         async __getCuurrercyList() {
             const res = await this.api.getCuurrercyList();
+            var arr = [];
+            Object.assign(arr, res.data);
+            this.originArr = arr;
             res.data.forEach(val => {
                 let flag = this.propertyList.some(subVal => {
                     return val.name == subVal.name;
@@ -83,7 +89,15 @@ export default {
         __foucus() {
             this.focusIcon = true;
         },
-        __search() {},
+        __search() {
+            let arr1 = [];
+            this.originArr.forEach(val => {
+                if (val.name.indexOf(this.searchVal) >= 0) {
+                    arr1.push(val);
+                }
+            })
+            this.currencyList = arr1;
+        },
         __selectC(item) {
             if (!item.isChecked) {
                 let flag = this.selectCList.some(val => {
@@ -107,7 +121,6 @@ export default {
             }
             this.SET_PROPERTY_LIST(this.selectCList);
             this.SET_ADDPROPERTY_STATE();
-            location.reload();
         }
     }
 };
@@ -203,7 +216,7 @@ export default {
             line-height: 30px;
             margin: 5px 0;
             padding: 0 20px;
-            > div:first-child {
+            > img {
                 width: 30px;
                 height: 30px;
                 border-radius: 50%;

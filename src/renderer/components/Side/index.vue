@@ -3,75 +3,50 @@
         <Scroll>
             <div class="menu">
                 <div class="srarchWrap">
-                    <div class="srarch cp"
-                         @click="__search">
+                    <div class="srarch cp" @click="__search">
                         <p>{{$t('search')}}</p>
                     </div>
-                    <a @click="__createGroup"
-                       class="add cp"
-                       href="javascript:;"
-                       v-tip="$t('side.createagroup')"></a>
+                    <a @click="__createGroup" class="add cp" href="javascript:;" v-tip="$t('side.createagroup')"></a>
 
                 </div>
                 <div class="menuList">
                     <div class="item">
-                        <div class="title cp"
-                             @click="__open(0)">
-                            <i class="arrow "
-                               :class="{'active':state[0]}"></i>
+                        <div class="title cp" @click="__open(0)">
+                            <i class="arrow " :class="{'active':state[0]}"></i>
                             <span class="name">{{$t('side.chatlist')}}</span>
 
                         </div>
-                        <ul class="list"
-                            :class="{'active':state[0]}">
-                            <li class="lis cp"
-                                v-for="(item,index) in webIMList"
-                                :key="index"
-                                @click='SET_WEBIM_SHOW(index)'>
-                                <img class="img"
-                                     :src="item.avatar"
-                                     alt="">
+                        <ul class="list" :class="{'active':state[0]}">
+                            <li class="lis cp" v-for="(item,index) in chatRecords" :key="index" @click='SET_WEBIM_List(item)'>
+
+                                <Avatar class="img" :src="item.avatar" />
                                 <span class="name">{{item.userName}} </span>
                             </li>
                         </ul>
                     </div>
                     <div class="item">
-                        <div class="title cp"
-                             @click="__open(1)">
-                            <i class="arrow "
-                               :class="{'active':state[1]}"></i>
+                        <div class="title cp" @click="__open(1)">
+                            <i class="arrow " :class="{'active':state[1]}"></i>
                             <span class="name">{{$t('side.contact')}}</span>
 
                         </div>
-                        <ul class="list"
-                            :class="{'active':state[1]}">
-                            <li class="lis cp"
-                                @click="__jump(item)"
-                                v-for="(item,index) in friends"
-                                :key="index">
-                                <img class="img"
-                                     :src="item.avatar"
-                                     alt="">
+                        <ul class="list" :class="{'active':state[1]}">
+                            <li class="lis cp" @click="__jump(item)" v-for="(item,index) in friends" :key="index">
+
+                                <Avatar class="img" :src="item.avatar" />
                                 <span class="name">{{item.remarkName||item.nickname||item.userName}} </span>
                             </li>
                         </ul>
                     </div>
                     <div class="item">
-                        <div class="title cp"
-                             @click="__open(2)">
-                            <i class="arrow"
-                               :class="{'active':state[2]}"></i>
+                        <div class="title cp" @click="__open(2)">
+                            <i class="arrow" :class="{'active':state[2]}"></i>
                             <span class="name">{{$t('side.groupconversations')}}</span>
                         </div>
-                        <ul class="list"
-                            :class="{'active':state[2]}">
-                            <li class="lis cp"
-                                v-for="(item,index) in groupList"
-                                :key="index"
-                                @click='__groupIM(item)'>
-                                <img class="img"
-                                     :src="item.image"
-                                     alt="">
+                        <ul class="list" :class="{'active':state[2]}">
+                            <li class="lis cp" v-for="(item,index) in groupList" :key="index" @click='__groupIM(item)'>
+
+                                <Avatar class="img" :src="item.image" />
                                 <span class="name">{{item.groupName}} </span>
                             </li>
                         </ul>
@@ -79,10 +54,8 @@
                 </div>
             </div>
         </Scroll>
-        <Scroll v-if="searchVisible"
-                ref="Scroll">
-            <Search @refresh='__refresh'
-                    @close="__close"></Search>
+        <Scroll v-if="searchVisible" ref="Scroll">
+            <Search @refresh='__refresh' @close="__close"></Search>
         </Scroll>
 
     </div>
@@ -90,22 +63,18 @@
 </template>
 
 <script>
-import { mapState, mapMutations } from 'vuex'
-import Search from './Search'
-import Scroll from '@/commom/Scroll'
+import { mapState, mapMutations } from "vuex";
+import Search from "./Search";
+import Scroll from "@/commom/Scroll";
 
 export default {
     data() {
         return {
-            req: {
-                type: '',
-                userId: 0
-            },
             friends: [],
             groupList: [],
             searchVisible: false,
             state: [false, false, false]
-        }
+        };
     },
     components: {
         Search,
@@ -114,81 +83,126 @@ export default {
     computed: {
         ...mapState({
             userInfo: state => state.UserInfo.userInfo,
-            webIMList: state => state.WebImQueue.webIMList
+            webIMList: state => state.WebImQueue.webIMList,
+            chatRecords: state => state.WebImQueue.chatRecords
         })
+    },
+    watch: {
+        chatRecords: {
+            handler(newVal,old) {
+                console.log(newVal)
+            },
+            immediate: true,
+            deep:true
+        }
     },
     methods: {
         ...mapMutations([
-            'SET_GROUP_STATE',
-            'SET_WEBIM_List',
-            'SET_WEBIM_SHOW'
+            "SET_GROUP_STATE",
+            "SET_WEBIM_List",
+            "SET_WEBIM_SHOW"
         ]),
         async __getdatas() {
-            this.req.userId = this.userInfo.userId
+            let userId = this.userInfo.userId;
             const res = await Promise.all([
-                this.api.friendsList(this.req),
-                this.api.groupList(this.req)
-            ])
-            this.friends = res[0].data
-            this.groupList = res[1].data
+                this.api.friendsList({ userId }),
+                this.api.groupList({ userId }),
+                this.api.startListener({
+                    userId: userId
+                })
+            ]);
+            this.friends = res[0].data;
+            this.groupList = res[1].data;
+        },
+        async __getFriendsList() {
+            let userId = this.userInfo.userId;
+            const res = await this.api.friendsList({ userId });
+            this.friends = res.data;
+        },
+        async __getGroupList() {
+            let userId = this.userInfo.userId;
+            const res = await this.api.groupList({ userId });
+            this.api.startListener({
+                userId: userId
+            });
+            this.groupList = res.data;
         },
         __open(index) {
-            this.$set(this.state, [index], !this.state[index])
+            this.$set(this.state, [index], !this.state[index]);
+            if (index === 1) {
+                this.__getFriendsList();
+            } else if (index === 2) {
+                this.__getGroupList();
+            }
         },
         __close() {
-            this.searchVisible = false
+            this.searchVisible = false;
         },
         __search() {
             // this.state = [false, false, false]
-            this.searchVisible = true
+            this.searchVisible = true;
         },
         __createGroup() {
-            this.SET_GROUP_STATE({ add: true })
+            this.SET_GROUP_STATE({ add: true });
         },
         __jump(item) {
             this.$router.push({
-                name: 'user',
+                name: "user",
                 query: {
                     id: item.friendId,
                     is: item.isFriend
                 }
-            })
+            });
 
             let obj = {
                 userId: item.friendId,
                 userName: item.nickname,
                 avatar: item.avatar,
-                type: 'personal',
+                type: "personal",
                 isShow: true,
-                width: '194px',
-                height: '168px',
+                width: "210px",
+                height: "168px",
                 msgList: []
+            };
+            if (this.chatRecords) {
+                this.chatRecords.forEach((val, index) => {
+                    if (val.userId == obj.userId) {
+                        obj.msgList = val.msgList;
+                    }
+                });
             }
-            this.SET_WEBIM_List(obj)
+
+            this.SET_WEBIM_List(obj);
         },
         __groupIM(item) {
-            // this.SET_GROUP_STATE({ id: id });
             let obj = {
-                userId: item.groupId,
+                groupId: item.groupId,
                 userName: item.groupName,
                 avatar: item.image,
-                type: 'group',
+                type: "group",
                 isShow: true,
-                width: '194px',
-                height: '168px',
+                width: "210px",
+                height: "168px",
                 msgList: []
+            };
+            if (this.chatRecords) {
+                this.chatRecords.forEach((val, index) => {
+                    if (val.groupId == obj.groupId) {
+                        obj.msgList = val.msgList;
+                    }
+                });
             }
-            this.SET_WEBIM_List(obj)
+            this.SET_WEBIM_List(obj);
         },
         __refresh() {
-            this.$refs.Scroll.refresh()
+            this.$refs.Scroll.refresh();
         }
     },
-
     created() {
-        this.__getdatas()
+        this.__getdatas();
+        this.$bus.on("getData", this.__getdatas);
     }
-}
+};
 </script>
 
 <style lang='scss' scoped>
@@ -213,7 +227,7 @@ export default {
         width: 140px;
         height: 26px;
         border-radius: 5px;
-        background: #dbdcdc url('./img/friends_search@2x.png') no-repeat 8px
+        background: #dbdcdc url("./img/friends_search@2x.png") no-repeat 8px
             center;
         > p {
             font-size: 12px;
@@ -228,7 +242,7 @@ export default {
         width: 26px;
         height: 26px;
         border-radius: 5px;
-        background: #dbdcdc url('./img/addGroup@2x.png') no-repeat center;
+        background: #dbdcdc url("./img/addGroup@2x.png") no-repeat center;
     }
 }
 .menuList {
@@ -263,12 +277,12 @@ export default {
     .arrow {
         width: 20px;
         height: 20px;
-        background-image: url('./img/dropDown_none@2x.png');
+        background-image: url("./img/dropDown_none@2x.png");
         background-repeat: no-repeat;
         background-position: center;
     }
     .active {
-        background-image: url('./img/dropDown@2x.png');
+        background-image: url("./img/dropDown@2x.png");
     }
 }
 

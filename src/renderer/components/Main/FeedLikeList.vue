@@ -2,7 +2,7 @@
 
     <div class="list"
          v-show="likeState"
-         :style="{top:likeStyle.top +'px',left:likeStyle.left+'px'}">
+         :style="{top:likeStyle.top +'px',left:likeStyle.left+'px',zIndex:zIndex}">
         <div>
             <span class="icon give"></span>
             <p>{{list.length}}</p>
@@ -12,8 +12,8 @@
         <ul>
             <li v-for="(ele,index) in list"
                 :key="index">
-                <img :src="ele.avatar"
-                     alt="">
+
+                <Avatar :src="ele.avatar" />
                 <p>{{ele.nickname}}</p>
             </li>
         </ul>
@@ -36,7 +36,8 @@ export default {
             userInfo: state => state.UserInfo.userInfo,
             likeState: state => state.Feed.likeState,
             likeStyle: state => state.Feed.likeStyle,
-            dynamicId: state => state.Feed.dynamicId
+            dynamicId: state => state.Feed.dynamicId,
+            zIndex: state => state.Feed.zIndex
         })
     },
     watch: {

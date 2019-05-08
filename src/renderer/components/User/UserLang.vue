@@ -7,7 +7,7 @@
         <ul class="list">
             <li v-for="(item,index) in list"
                 :key="index"
-                :class="{'active':active===index}"
+                :class="{'active':active===index,'cp':true}"
                 @click="__setLang(index)">{{item}}</li>
         </ul>
 
@@ -17,7 +17,6 @@
 <script>
 import { mapState } from 'vuex'
 import setLanguages from '@/lang/fn'
-import { format, formatDistance, subDays } from 'date-fns'
 
 export default {
     data() {
@@ -38,26 +37,26 @@ export default {
             let lang
             switch (index) {
                 case 0:
-                    lang = 'zh'
+                    lang = 'zh-CN'
                     break
                 case 1:
-                    lang = 'tw'
+                    lang = 'zh-TW'
                     break
                 default:
-                    lang = 'en'
+                    lang = 'en-US'
                     break
             }
             this.$i18n.locale = lang
-            localStorage.setItem('language', lang)
-            location.reload()
+            localStorage.setItem('LANGUAGE', lang)
+            this.__setActive()
         },
         __setActive() {
-            let lang = localStorage.getItem('language') || setLanguages()
+            let lang = localStorage.getItem('LANGUAGE') || setLanguages()
             switch (lang) {
-                case 'zh':
+                case 'zh-CN':
                     this.active = 0
                     break
-                case 'tw':
+                case 'zh-TW':
                     this.active = 1
                     break
                 default:

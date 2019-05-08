@@ -6,8 +6,9 @@
         <div class="container"
              v-show='homeShow'>
             <router-view></router-view>
+            <Loading></Loading>
         </div>
-
+        <ImForward v-if="forwardShow"></ImForward>
     </div>
 
 </template>
@@ -16,13 +17,15 @@
 import { mapState, mapMutations } from 'vuex'
 import TheTab from '@/components/TheTab'
 import TheNav from '@/components/TheNav'
-
+import Loading from '@/components/Loading'
+import ImForward from '@/components/WebIM/Forward'
 export default {
     name: 'angel_explore',
-    components: { TheNav, TheTab },
+    components: { TheNav, TheTab, Loading, ImForward},
     computed: {
         ...mapState({
-            homeShow: state => state.Tabs.homeShow
+            homeShow: state => state.Tabs.homeShow,
+            forwardShow: state => state.WebImQueue.forwardShow
         })
     },
     methods: {
@@ -35,7 +38,7 @@ export default {
         ]),
         __cancel() {
             let className = event.target.className
-            console.log(className, 'className')
+            // console.log(className, 'className')
             if (typeof className !== 'string') return
             if (className.indexOf('NAV_MENU') === -1)
                 this.SET_NAV_MENU_STATE(null)

@@ -31,6 +31,7 @@ export default {
 .wallet {
     background: #fff;
     width: 660px;
+    cursor: pointer;
     // height: 1000px;
 }
 </style>

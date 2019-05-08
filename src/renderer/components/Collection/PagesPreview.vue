@@ -40,7 +40,7 @@ export default {
     computed: {},
     methods: {
         __out() {
-            this.$emit('out')
+            this.$emit('out', 'viewState')
         }
     },
     watch: {},
@@ -62,29 +62,28 @@ export default {
 .details {
     position: absolute;
     left: 50%;
-    top: 55%;
+    top: 50%;
     width: 600px;
     transform: translate(-50%, -50%);
     display: flex;
     align-items: center;
     .main {
         flex-grow: 1;
-        // display: flex;
         padding: 20px;
         width: 100%;
+        height: 100%;
 
         img {
             display: block;
             margin: 0 auto;
-            width: 60%;
-            // max-width: 100%;
-            // max-height: 60%;
+            max-width: 100%;
+            max-height: 100%;
         }
         video {
             display: block;
             margin: 0 auto;
             max-width: 100%;
-            max-height: 80%;
+            max-height: 100%;
         }
     }
 }

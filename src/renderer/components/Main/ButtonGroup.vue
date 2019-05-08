@@ -11,8 +11,15 @@
               v-if="item.flag">{{text}}</span>
         <span class='ignore cp'
               v-if="type=='request'&&!item.flag"
-              @click="__ignore  ">{{$t('delete')}}</span>
-
+              @click="__changeConfirm(item,true)">{{$t('delete')}}</span>
+        <div class="confirm"
+             v-if="item.confirmState">
+            <p>{{$t('main.confirmTxt')}}</p>
+            <span class="add cp  NAV_MENU"
+                  @click="__ignore(item)">{{$t('main.confirm')}}</span>
+            <span class="ignore cp NAV_MENU"
+                  @click="__changeConfirm(item,false)">{{$t('cancel')}}</span>
+        </div>
     </div>
 
 </template>
@@ -36,7 +43,8 @@ export default {
     },
     data() {
         return {
-            text: ''
+            text: '',
+            zIndex: 1
         }
     },
     components: {},
@@ -65,6 +73,7 @@ export default {
                     this.text = this.$t('main.added')
                 }
             }
+            this.$bus.emit('getData')
         },
         async __ignore() {
             let data = {
@@ -74,6 +83,10 @@ export default {
             const res = await this.api.groupRefust(data)
             this.$set(this.item, 'flag', true)
             this.text = this.$t('main.rejected')
+        },
+        __changeConfirm(item, state) {
+            this.zIndex++
+            this.$set(item, 'confirmState', state)
         }
     },
     created() {}
@@ -103,6 +116,23 @@ export default {
     .active {
         color: #000;
         background: #dbdcdc;
+    }
+}
+.confirm {
+    position: absolute;
+    top: -10px;
+    left: -20px;
+    text-align: center;
+    width: 140px;
+    background: #ffffff;
+    box-shadow: 0px 0px 4px rgba($color: #000000, $alpha: 0.5);
+    padding: 5px;
+    > p {
+        display: block;
+    }
+    span {
+        display: inline-block;
+        margin-left: 1px;
     }
 }
 </style>

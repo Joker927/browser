@@ -8,13 +8,13 @@ import twLocale from './tw'
 Vue.use(VueI18n)
 
 const messages = {
-    en: {
+    'en-US': {
         ...enLocale
     },
-    zh: {
+    'zh-CN': {
         ...zhLocale
     },
-    tw: {
+    'zh-TW': {
         ...twLocale
     }
 }
@@ -22,7 +22,7 @@ const messages = {
 const i18n = new VueI18n({
     // set locale
     // options: en | zh | es
-    locale: localStorage.getItem('language') || setLanguages(),
+    locale: localStorage.getItem('LANGUAGE') || setLanguages(),
     messages
     // set locale messages
 })

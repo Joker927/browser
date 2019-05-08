@@ -3,7 +3,8 @@
         <div class="contain" v-if="!sureShow">
             <div class="exit" @click="__exit"></div>
             <div class="headImg">
-                <img :src="userImg" />
+                <img :src="userImg" v-if="userImg"/>
+                <img src="./img/icon.png" v-else/>
             </div>
             <div class="name">
                 {{userName}}
@@ -20,7 +21,7 @@
                 </div>
             </div>
             <div class="explain">
-                <textarea :placeholder="$t('webim.placeholder2')"></textarea>
+                <textarea :placeholder="$t('webim.placeholder2')" v-model="explain"></textarea>
             </div>
             <div class="btn" @click="__sureTransfer()">{{$t('webim.transfer')}}</div>
         </div>
@@ -29,7 +30,7 @@
             <div class="sureImg"></div>
             <div class="sureDiv">给{{this.userName}}{{$t('webim.transfer')}}</div>
             <div class="sureDiv">{{this.amount}}</div>
-            <div class="sureBtn" @click="__exit">{{$t('webim.done')}}</div>
+            <div class="sureBtn" @click="__done">{{$t('webim.done')}}</div>
         </div>
     </div>
 </template>
@@ -42,7 +43,8 @@ export default {
             option: "GIT",
             sureShow: false,
             toAddress: "",
-            amount: ""
+            amount: "",
+            explain: ""
         };
     },
     mounted() {
@@ -58,8 +60,22 @@ export default {
         })
     },
     methods: {
+        ...mapMutations(["SET_MSG_List", "SET_LOADING_STATE"]),
         __exit() {
             this.$emit("changeStatus", false);
+        },
+        __done() {
+            var obj = {
+                type: 0,
+                messageType: 5,
+                msg: {
+                    toNickname: this.userName,
+                    amount: this.amount,
+                    currency: this.option
+                }
+            };
+            this.SET_MSG_List({ index: this.userIdx, msg: obj });
+            this.__exit();
         },
         __sureTransfer() {
             console.log(this.userIdx);
@@ -85,12 +101,29 @@ export default {
                 toAddress: this.toAddress,
                 contractAddress: contractAddress
             };
+            this.SET_LOADING_STATE(true)
             const res = await this.api.transferToSeedAddress(params);
             if (res.msg != "Success") {
                 this.$Toast(res.msg);
             } else {
+                var messageType = {
+                    remark: this.explain,
+                    currency: this.option,
+                    amount: this.amount,
+                    toNickname: this.userName,
+                };
+                let params = {
+                    body: JSON.stringify(messageType),
+                    fromUserId: this.userInfo.userId,
+                    messageType: 5,
+                    time: 0,
+                    toUserId: this.userId,
+                    type: "chat"
+                };
+                this.api.sendMessage(params);
                 this.sureShow = true;
             }
+            this.SET_LOADING_STATE(false)
         }
     }
 };

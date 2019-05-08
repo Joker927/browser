@@ -1,5 +1,5 @@
 <template>
-    <div class="contain">
+    <div class="contain" id="webIm">
         <div class="WebIM" v-for="(item,index) in webIMList" :key="index" :style="{width:item.width}">
             <div class="name cp" v-if="!item.isShow" @click="__changeShow(index)">{{item.userName}}</div>
             <div class="winMin" v-if="item.isShow">
@@ -10,8 +10,11 @@
                         <!-- <span class="icon"></span> -->
                         <!-- <span class="icon"></span> -->
                         <!-- <span class="icon" @click="__headerSetShow(index)"></span> -->
+
+                        <span class="icon" @click="__changeShow(index)">_</span>
                         <span class="icon" @click="__changeSize(index)"></span>
-                        <span class="icon" @click="__changeShow(index)"></span>
+                        <span class="icon" @click="__closeIm(index)"></span>
+
                     </div>
                     <!-- <div class="header-set" v-if="index==headerSetIdx">
                         <div @click="changeNameShow=true"><img src="./img/chat_setting_change name@2x.png" />更改名称</div>
@@ -23,45 +26,108 @@
                 </header>
                 <div class="conWrap" :style="{height:item.height}">
                     <ul class="feed imFrame" id="feed">
-                        <li class="a" :class="{'b':items.type==0}" v-for="(items,index) in item.msgList" :key="index">
-                            <img class='headerImg' :src="item.avatar" v-if="items.type==1">
-                            <img class='headerImg' :src="userInfo.avatar" v-if="items.type==0">
-                            <div class="msg" v-if="items.messageType==1">{{items.msg}}</div>
+                        <li class="a" :class="{'b':items.type==0}" v-for="(items,indexs) in item.msgList" :key="indexs" @contextmenu="__operationShow(index,indexs,items)">
+                            <img class='headerImg' :src="items.avatar" v-if="items.type==1&&items.avatar&&items.messageType!=9">
+                            <img class='headerImg' src="./img/icon.png" v-if="items.type==1&&!items.avatar&&items.messageType!=9">
+                            <img class='headerImg' :src="userInfo.avatar" v-if="items.type==0&&userInfo.avatar&&items.messageType!=9">
+                            <img class='headerImg' src="./img/icon.png" v-if="items.type==0&&!userInfo.avatar&&items.messageType!=9">
+                            <div class="userName" v-if="items.type==1&&items.messageType!=9">{{items.userName}}</div>
+                            <div class="nickName" v-if="items.type==0&&items.messageType!=9">{{userInfo.nickname}}</div>
+                            <p class="msg" v-if="items.messageType==1">{{items.msg}}</p>
+                            <div v-if="items.messageType==9" class="redExplain">
+                                <p class="clearfix">
+                                    <i></i>
+                                    {{items.msg.fromName}}领取了{{items.msg.senderUserName}}的
+                                    <span>红包</span>
+                                </p>
+                            </div>
                             <div v-if="items.messageType==2">
                                 <img :src="items.msg" style="width: 100px;height: auto;" />
                             </div>
                             <div v-if="items.messageType==3" class="voice">
-                                <img src="./img/yuyin.png" class="voiceImg" @click="__playVoice" />
-                                <audio :src="items.msg"></audio>
+                                <div class="voiceImg" @click="__playVoice">
+                                    <img src="./img/voice_01.png" name="img1" style="display:block;" />
+                                    <img src="./img/voice_02.png" name="img2" style="display:none;" />
+                                    <img src="./img/voice_03.png" name="img3" style="display:none;" />
+                                    <div class="duration">{{items.duration}}</div>
+                                </div>
+                                <audio :src="items.msg" class="audio"></audio>
                             </div>
-                            <!-- <div v-if="items.messageType==5" class="gathering" @click="__gathering">
+                            <div v-if="items.messageType==4" class="address" @click="SET_MAP_STATE(items.msg)">
+                                <div class="title">
+                                    {{items.msg.address}}
+                                </div>
+                                <div>
+                                    <img :src="items.msg.mapScreenShot" />
+                                </div>
+                            </div>
+                            <div v-if="items.messageType==5" class="gathering" @click="__transferDetailShow(index,items)">
                                 <div class="clearfix">
                                     <div class="fl"></div>
-                                    <div class="fr">{{item.msg}}</div>
+                                    <div class="fr">
+                                        <div v-if="items.type == 1">
+                                            {{items.msg.toNickname}}{{$t('webim.transferForYou')}}
+                                        </div>
+                                        <div v-else>
+                                            {{$t('webim.transferFor')}}{{items.msg.toNickname}}
+                                        </div>
+                                        <div>
+                                            {{items.msg.amount}}{{items.msg.currency}}
+                                        </div>
+                                    </div>
                                 </div>
-                            </div> -->
-                            <div v-if="items.messageType!=1&&items.messageType==2&&items.messageType!=3" class="msg">
+                            </div>
+                            <div v-if="items.messageType==7" class="red" @click="__getRedShow(index,items,item,indexs)">
+                                <div class="clearfix">
+                                    <div class="fl"></div>
+                                    <div class="fr">
+                                        <div>
+                                            {{items.msg.remark}}
+                                        </div>
+                                        <div>
+                                            {{$t('webim.red')}}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div v-if="items.messageType==11" class="msg" @click="__previewDynamic(items.msg)">
+                                <div class="clearfix">
+                                    <div class="fl" style="width:calc(100% - 40px);padding-right:10px">
+                                        <div>
+                                            {{items.msg.dynamicDesc}}
+                                        </div>
+                                    </div>
+                                    <div class="fr">
+                                        <div style="width:40px;height:40px">
+                                            <img v-if="items.msg.imageUrl" style="width:100%;height:100%;object-fit:cover" :src="items.msg.imageUrl" alt="">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div v-if="items.messageType!=1&&items.messageType!=2&&items.messageType!=3&&items.messageType!=5&&items.messageType!=7&&items.messageType!=11&&items.messageType!=9&&items.messageType!=4" class="msg">
                                 {{$t('webim.msg')}}
                             </div>
+
                         </li>
                     </ul>
-                    <Transfer v-if="transferIdx==index" :user-idx="index" :user-id="item.userId" :user-name="item.userName" :user-img="item.avatar"
-                        v-on:changeStatus="__exitTransfer"></Transfer>
-                    <Red v-if="redIdx==index" :user-idx="index" :user-id="item.userId" :user-name="item.userName"
-                        v-on:changeStatus="__exitRed"></Red>
+                    <Transfer v-if="transferIdx==index" :user-idx="index" :user-id="item.userId" :user-name="item.userName" :user-img="item.avatar" v-on:changeStatus="__exitTransfer"></Transfer>
+                    <TransferDetail v-if="transferDetailIdx==index" :transfer-info="transferDetailInfo" v-on:changeStatus="__exitTransferDetail"></TransferDetail>
+                    <Red v-if="redIdx==index" :user-idx="index" :user-id="item.userId" :user-name="item.userName" :user-type="item.type" :group-id="item.groupId" v-on:changeStatus="__exitRed"></Red>
+                    <GetRed v-if="getRedIdx==index" :red-msg='redMsgIdx' :user-id="item.userId" :red-info="getRedInfo" :user-idx="index" :user-name="item.userName" :user-type="item.type" :group-id="item.groupId" v-on:changeStatus="__exitGetRed"></GetRed>
+                    <RedDetail v-if="redDetailIdx==index" :red-info="redInfo" :user-name="item.userName" v-on:changeStatus="__exitRedDetail"></RedDetail>
+                    <Operation v-if="operationIdx==index" :msg-idx="operationMsgIdx" :ope-idx="index" :user-id="item.userId || item.groupId" :user-type="item.type" :msg-item="operationMsgItem" :user-name="item.userName" :head="item.avatar" v-on:changeStatus="__exitOperation"></Operation>
                 </div>
                 <div class="input">
-                    <input type="text" class="inputItem" :placeholder="$t('webim.placeholder')" @keyup.enter="__submitMsg(index,item)"
-                        @blur="__blurInput(index)">
+                    <input type="text" class="inputItem" :placeholder="$t('webim.placeholder')" @keyup.enter="__submitMsg(index,item)" @blur="__blurInput(index)">
                     <div>
                         <EmojiPanel class="emojiPanel" @setEmoji='__setEmoji' v-if="index==emojiSetIdx"></EmojiPanel>
                         <span class="icon" @click='__emojiSetShow(index)'></span>
                         <span class="icon">
-                            <input type="file" @change="__chooseImg(index,item.type)" class="fileClass" id="fileId">
+                            <input type="file" @change="__chooseImg(index,item.type,item)" class="fileClass" id="fileId">
                         </span>
                         <!-- <span class="icon"></span> -->
-                        <span class="icon" @click="__transferShow(index)"></span>
-                        <span class="icon" @click="__redShow(index)"></span>
+                        <span class="icon transferIcon" v-if="item.type=='personal'" @click="__transferShow(index)"></span>
+                        <span class="icon redIcon" @click="__redShow(index)"></span>
                     </div>
                 </div>
             </div>
@@ -75,27 +141,50 @@ import { mapState, mapMutations } from "vuex";
 import createSeed from "gitium.seed.js";
 import ChangeName from "./ChangeName";
 import Transfer from "./Transfer";
+import TransferDetail from "./TransferDetail";
 import Red from "./Red";
+import GetRed from "./GetRed";
+import RedDetail from "./RedDetail";
 import EmojiPanel from "./EmojiPanel";
+import Operation from "./Operation";
+
 export default {
     props: ["webIMList"],
     data() {
         return {
+            voiceBc: "./img/voice_01.png",
             inputVal: "",
             inputIdx: 99,
-            emojiSetShow: false,
             emojiSetIdx: 99,
 
-            headerSetShow: false,
             headerSetIdx: 99,
             changeNameShow: false,
-            transferShow: false,
             transferIdx: 99,
-            redShow: false,
-            redIdx: 99
+            transferDetailIdx: 99,
+            transferDetailInfo: "",
+            redIdx: 99,
+            getRedIdx: 99,
+            getRedInfo: {},
+            redMsgIdx: false,
+            redDetailIdx: 99,
+            operationIdx: 99,
+            operationMsgIdx: "",
+            operationMsgItem: "",
+            redInfo: {},
+            righttime: null,
+            voiceImgShow: 1
         };
     },
-    components: { ChangeName, Transfer, Red, EmojiPanel },
+    components: {
+        ChangeName,
+        Transfer,
+        TransferDetail,
+        Red,
+        GetRed,
+        RedDetail,
+        EmojiPanel,
+        Operation
+    },
     watch: {
         webIMList: {
             handler(newVal, oldVal) {
@@ -116,24 +205,47 @@ export default {
         //使用延时器模拟定时器每10秒获取一次消息
         let getMsg = function() {
             setTimeout(function() {
-                _this.__getMsg();
-                getMsg();
+                if (JSON.stringify(_this.userInfo) != "{}") {
+                    _this.__getMsg();
+                    getMsg();
+                }
             }, 10000);
         };
         getMsg();
+        // this.__getMsg();
     },
     methods: {
         ...mapMutations([
             "SET_WEBIM_SHOW",
             "SET_WEBIM_SIZE",
             "SET_WEBIM_List",
-            "SET_MSG_List"
+            "SET_MSG_List",
+            "SPLICE_MSG_LIST",
+            "SET_FEED_VIEW_DYNAMIC_ID",
+            "DELETE_WEBIM_LIST",
+            "SET_MAP_STATE"
         ]),
+
+        //预览转发动态
+        __previewDynamic(msg) {
+            this.SET_FEED_VIEW_DYNAMIC_ID({
+                id: msg.dynamicId,
+                t: new Date().getTime()
+            });
+        },
+        __operationShow(index, indexs, item) {
+            this.operationIdx = index;
+            this.operationMsgIdx = indexs;
+            this.operationMsgItem = item;
+        },
         __changeShow(index) {
             this.SET_WEBIM_SHOW(index);
         },
         __changeSize(index) {
             this.SET_WEBIM_SIZE(index);
+        },
+        __closeIm(index) {
+            this.DELETE_WEBIM_LIST(index);
         },
         //设置菜单显示、隐藏
         __headerSetShow(index) {
@@ -163,11 +275,48 @@ export default {
         __redShow(index) {
             this.redIdx = index;
         },
+        __getRedShow(index, items, item, indexs) {
+            // if (items.msg.isGet) {
+            //     this.$Toast('已领取过');
+            //     return
+            // }
+            this.redMsgIdx = indexs;
+            if (items.type == 0) {
+                if (item.type == "group") {
+                    this.getRedInfo = items.msg;
+                    this.getRedIdx = index;
+                    return;
+                }
+                this.redInfo = items.msg;
+                this.redDetailIdx = index;
+            } else {
+                this.getRedInfo = items.msg;
+                this.getRedIdx = index;
+            }
+        },
+        __transferDetailShow(index, item) {
+            if (item.type == 0) {
+                this.transferDetailInfo = item;
+                this.transferDetailIdx = index;
+            }
+        },
         __exitTransfer(val) {
             this.transferIdx = 99;
         },
+        __exitTransferDetail(val) {
+            this.transferDetailIdx = 99;
+        },
         __exitRed(val) {
             this.redIdx = 99;
+        },
+        __exitGetRed() {
+            this.getRedIdx = 99;
+        },
+        __exitRedDetail() {
+            this.redDetailIdx = 99;
+        },
+        __exitOperation() {
+            this.operationIdx = 99;
         },
         __setEmoji(emoji) {
             this.emojiSetIdx = 99;
@@ -183,6 +332,9 @@ export default {
         },
         //发送文字消息
         async __submitMsg(index, item) {
+            if (!event.target.value) {
+                return;
+            }
             var msg = {
                 type: 0,
                 messageType: 1,
@@ -205,6 +357,8 @@ export default {
             if (item.type == "personal") {
                 const res = await this.api.sendMessage(para);
             } else {
+                para.type = "groupchat";
+                para.toUserId = item.groupId;
                 const res = await this.api.sendGroupMessage(para);
             }
             this.emojiSetIdx = 99;
@@ -230,6 +384,7 @@ export default {
             const groupRes = await this.api.getGroupMessage(
                 this.userInfo.userId
             );
+            // const groupRes = {"code":0,"msg":"success","data":{"resultCode":1,"msg":"receiver success.","message":[{"fromUserId":212,"fromAccount":"681442828814517","fromUserAvatar":"","fromNickName":"joker","toUserId":102,"toAccount":"chat_102@groupchat.angel.com","threadID":"","messageType":1,"body":"11","time":1554271191041,"fromCollectionAddress":"","unique":"d8269eea-8def-4aa5-a5f3-f4aa9b9e6646","chatType":1,"groupName":"Test","groupAccount":"chat_102@groupchat.angel.com","groupId":"102","groupAvatar":""}],"returnObj":{}}};
             let arr = [res, groupRes];
             arr.forEach(resArrVal => {
                 if (
@@ -238,10 +393,31 @@ export default {
                     resArrVal.data.message.length > 0
                 ) {
                     resArrVal.data.message.forEach(val => {
+                        if (
+                            val.messageType == 5 ||
+                            val.messageType == 7 ||
+                            val.messageType == 9 ||
+                            val.messageType == 4
+                        ) {
+                            val.body = JSON.parse(val.body);
+                            //红包默认remark
+                            if (!val.body.remark && val.messageType == 7) {
+                                val.body.remark = "恭喜发财";
+                            }
+                            //领取红包信息添加fromName
+                            if (val.messageType == 9) {
+                                val.body.fromName = val.fromNickName;
+                            }
+                        }
+
                         var flag = this.webIMList.some((subVal, index) => {
-                            if (subVal.userId == val.fromUserId) {
+                            //群聊信息
+                            if (subVal.groupId == val.groupId) {
                                 var msg = {
                                     type: 1,
+                                    userName: val.fromNickName,
+                                    avatar: val.fromUserAvatar,
+                                    userName: val.fromNickName,
                                     messageType: val.messageType,
                                     msg: val.body
                                 };
@@ -249,27 +425,52 @@ export default {
                                     index,
                                     msg
                                 });
+                                return subVal.groupId == val.groupId;
                             }
-                            return subVal.userId == val.fromUserId;
+                            //个人消息
+                            if (!val.groupId) {
+                                if (subVal.userId == val.fromUserId) {
+                                    var msg = {
+                                        type: 1,
+                                        userName: val.fromNickName,
+                                        avatar: val.fromUserAvatar,
+                                        messageType: val.messageType,
+                                        msg: val.body
+                                    };
+                                    this.SET_MSG_List({
+                                        index,
+                                        msg
+                                    });
+                                    return subVal.userId == val.fromUserId;
+                                }
+                            }
                         });
 
                         if (!flag) {
                             let obj = {
-                                userId: val.fromUserId,
                                 userName: val.fromNickName,
                                 avatar: val.fromUserAvatar,
                                 type: "personal",
-                                isShow: false,
-                                width: "194px",
+                                isShow: true,
+                                width: "210px",
                                 height: "168px",
                                 msgList: [
                                     {
                                         type: "1",
+                                        userName: val.fromNickName,
+                                        avatar: val.fromUserAvatar,
                                         messageType: val.messageType,
                                         msg: val.body
                                     }
                                 ]
                             };
+                            if (val.groupId) {
+                                obj.groupId = val.groupId;
+                                obj.type = "group";
+                                obj.userName = val.groupName;
+                            } else {
+                                obj.userId = val.fromUserId;
+                            }
                             this.SET_WEBIM_List(obj);
                         }
                     });
@@ -277,8 +478,33 @@ export default {
             });
 
             this.$nextTick(function() {
+                setTimeout(() => {
+                    var audios = document.querySelectorAll(".audio");
+                    this.webIMList.forEach((val, index) => {
+                        val.msgList.forEach((subVal, msgIdx) => {
+                            if (subVal.messageType == 3) {
+                                audios.forEach(audio => {
+                                    if (audio.currentSrc == subVal.msg) {
+                                        var msg = {
+                                            type: subVal.type,
+                                            messageType: subVal.messageType,
+                                            msg: subVal.msg,
+                                            duration: Math.round(audio.duration)
+                                        };
+                                        this.SPLICE_MSG_LIST({
+                                            index,
+                                            msgIdx,
+                                            msg
+                                        });
+                                    }
+                                });
+                            }
+                        });
+                    });
+                }, 0);
                 this.webIMList.forEach((val, index) => {
                     if (
+                        document.querySelectorAll(".imFrame")[index] &&
                         document.querySelectorAll(".imFrame")[index]
                             .clientHeight
                     ) {
@@ -292,11 +518,11 @@ export default {
             });
         },
         //发送图片消息
-        async __chooseImg(index, type) {
+        async __chooseImg(index, type, item) {
             let arr = document.getElementsByClassName("fileClass");
             const _this = this;
             let str = "";
-            let f = document.getElementById("fileId").files;
+            let f = document.getElementsByClassName("fileClass")[index].files;
             for (var i = 0; i < f.length; i++) {
                 var reader = new FileReader();
                 reader.readAsDataURL(f[i]);
@@ -317,7 +543,7 @@ export default {
             formData.append("file", arr[index].files[0]);
             formData.append("fromUserId", this.userInfo.userId);
             formData.append("messageType", 2);
-            formData.append("toUserId", 106);
+            formData.append("toUserId", item.userId);
             formData.append("type", "chat");
             if (type == "personal") {
                 const res = await this.api.sendImgMessage(formData);
@@ -343,18 +569,34 @@ export default {
         //获取币种列表
         async __getCurrencyList() {
             const res = await this.api.getCuurrercyList();
-            console.log(res);
         },
         __playVoice() {
+            const _this = this;
             let audio = event.currentTarget.nextElementSibling;
+            let imgs = event.currentTarget.getElementsByTagName("img");
             if (audio.paused) {
+                this.righttime = setInterval(function() {
+                    if (imgs[0].style.display == "block") {
+                        imgs[0].style.display = "none";
+                        imgs[1].style.display = "block";
+                    } else if (imgs[1].style.display == "block") {
+                        imgs[1].style.display = "none";
+                        imgs[2].style.display = "block";
+                    } else {
+                        imgs[2].style.display = "none";
+                        imgs[0].style.display = "block";
+                    }
+                }, 200);
                 audio.play();
             } else {
+                clearInterval(this.righttime);
                 audio.pause();
             }
         },
         //点击转账
-        __gathering() {}
+        __gathering() {},
+        //点击红包
+        __getRed() {}
     },
     watch: {},
     created() {}
@@ -368,6 +610,7 @@ export default {
     right: 20%;
     display: flex;
     z-index: 2;
+    cursor: pointer;
 }
 
 .WebIM {
@@ -435,9 +678,14 @@ export default {
             //     background-image: url("./img/icon_15@2x.png");
             // }
             > span:nth-of-type(1) {
-                background-image: url("./img/icon_14@2x.png");
+                font-size: 12px;
+                text-align: center;
+                margin-top: -4px;
             }
             > span:nth-of-type(2) {
+                background-image: url("./img/icon_14@2x.png");
+            }
+            > span:nth-of-type(3) {
                 background-image: url("./img/icon_15@2x.png");
             }
         }
@@ -447,9 +695,10 @@ export default {
             background: #fff;
             .feed {
                 padding-bottom: 10px;
+                overflow: hidden;
                 > li {
                     display: flex;
-                    margin-top: 10px;
+                    margin-top: 20px;
                     .img {
                     }
                     .msg {
@@ -459,8 +708,24 @@ export default {
                 }
                 .a {
                     display: flex;
+                    position: relative;
                     .msg {
                         background: #dbdcdc;
+                        word-wrap: break-word;
+                    }
+                    .userName {
+                        font-size: 12px;
+                        position: absolute;
+                        top: -16px;
+                        left: 28px;
+                        color: #9e9e9e;
+                    }
+                    .nickName {
+                        font-size: 12px;
+                        position: absolute;
+                        top: -16px;
+                        right: 28px;
+                        color: #9e9e9e;
                     }
                 }
                 .b {
@@ -469,12 +734,14 @@ export default {
                     .msg {
                         background: #3f61a6;
                         color: #fff;
+                        word-wrap: break-word;
                     }
                 }
                 .headerImg {
                     width: 20px;
                     height: 20px;
                     margin: 4px;
+                    margin-top: -6px;
                     border-radius: 50%;
                 }
             }
@@ -515,11 +782,11 @@ export default {
                 //     background-image: url("./img/icon_19@2x.png");
                 //     position: relative;
                 // }
-                > span:nth-of-type(3) {
+                .transferIcon {
                     background-image: url("./img/icon_20@2x.png");
                     position: relative;
                 }
-                > span:nth-of-type(4) {
+                .redIcon {
                     background: url("./img/redPocket@3x.png") 2px 2px no-repeat;
                     position: relative;
                     background-size: 76% 76%;
@@ -597,18 +864,46 @@ export default {
 }
 .voice {
     position: relative;
-    audio {
-    }
+    display: flex;
 }
 .voiceImg {
-    width: 100px;
-    height: 30px;
+    width: 90px;
+    height: 28px;
+    background: #9eea6a;
+    position: relative;
+    .duration {
+        position: absolute;
+        line-height: 30px;
+        color: #999;
+        top: 0;
+        right: 8px;
+    }
+    img {
+        margin-left: 8px;
+        width: 24px;
+        height: 24px;
+        margin-top: 3px;
+    }
+}
+.voiceImg:hover {
+    background: rgb(128, 255, 0);
+}
+.address {
+    .title{
+        height: 20px;
+        line-height: 20px;
+        background: #eeeeee;
+        color: #333;
+    }
+    img{
+        width: 170px;
+    }
 }
 .gathering {
     > div {
         background: #eca14f;
         height: 40px;
-        width: 120px;
+        width: 150px;
         border-radius: 10px;
         padding-top: 1px;
         > div:first-child {
@@ -620,9 +915,47 @@ export default {
             background-size: 100% 100%;
         }
         > div:last-child {
-            line-height: 40px;
+            width: 98px;
             color: #fff;
             margin-right: 10px;
+            font-size: 12px;
+            > div:first-child {
+                overflow: hidden;
+            }
+            > div {
+                height: 20px;
+                line-height: 20px;
+            }
+        }
+    }
+}
+.red {
+    > div {
+        background: #eca14f;
+        height: 50px;
+        width: 150px;
+        border-radius: 10px;
+        padding-top: 1px;
+        > div:first-child {
+            margin-top: 5px;
+            margin-left: 10px;
+            height: 36px;
+            width: 30px;
+            background: url(./img/redPocket_big@3x.png);
+            background-size: 100% 100%;
+        }
+        > div:last-child {
+            width: 98px;
+            color: #fff;
+            font-size: 12px;
+            margin-top: 3px;
+            > div:first-child {
+                overflow: hidden;
+            }
+            > div {
+                height: 21px;
+                line-height: 21px;
+            }
         }
     }
 }
@@ -632,5 +965,25 @@ export default {
     top: -500px;
     left: 10px;
     box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.4);
+}
+.redExplain {
+    width: 100%;
+    text-align: center;
+    p {
+        font-size: 12px;
+        line-height: 22px;
+        i {
+            background: url(./img/redPocket@3x.png);
+            background-size: 100% 100%;
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            position: relative;
+            top: 3px;
+        }
+        span {
+            color: #eca14f;
+        }
+    }
 }
 </style>

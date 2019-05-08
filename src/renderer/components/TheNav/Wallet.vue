@@ -2,7 +2,7 @@
     <div class="contain">
         <div @click="__jump('/myWallet')">{{$t('nav.wallet')}}</div>
         <div @click="__jump('/personalWorks')">{{$t('nav.personalWorks')}}</div>
-        <div @click="__jump('/giveSet')">{{$t('nav.giveSet')}}</div>
+        <div @click="__jump('/giveSet')">{{$t('wallet.rewardList')}}</div>
         <div @click="__jump('/bill')">{{$t('nav.bill')}}</div>
     </div>
 </template>

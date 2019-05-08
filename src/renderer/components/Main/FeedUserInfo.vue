@@ -1,8 +1,9 @@
 <template>
     <div>
         <div class="info">
-            <div class="avatar"><img :src="item.avatar"
-                     alt=""></div>
+            <div class="avatar">
+                <Avatar :src="item.avatar" />
+            </div>
             <p>{{item.nickname}}</p>
             <div class="opt">
                 <div class="msg cp">{{$t('main.sendMsg')}}</div>
@@ -93,8 +94,9 @@ export default {
         overflow: hidden;
         border: 1px solid #efefe0;
         img {
-            width: 100%;
-            height: 100%;
+            width: 60px;
+            height: 60px;
+            object-fit: cover;
         }
     }
 }

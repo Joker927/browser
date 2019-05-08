@@ -4,7 +4,7 @@
 
             <span class="icon check"
                   @click="__selectAll"
-                  :class="{'checked':selectedArr.length==data.totalPage}"></span>
+                  :class="{'checked':selectedArr.length==data.totalPage&&selectedArr.length>0}"></span>
             <span class="icon refresh"
                   @click="__refresh"
                   v-if="!selectedArr.length"></span>
@@ -143,6 +143,7 @@ export default {
         },
         __refresh() {
             this.$emit('refresh')
+            console.log(1)
         },
 
         async __operate(status) {

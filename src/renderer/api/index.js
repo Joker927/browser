@@ -42,6 +42,15 @@ export const login = data => {
     return http.post(req)
 }
 
+//登出
+export const loginOut = data => {
+    const req = {
+        data,
+        url: 'api/im/loginOut'
+    }
+    return http.post(req)
+}
+
 //获取用户信息
 export const userInfo = data => {
     const req = {
@@ -464,6 +473,15 @@ export const getGroupMessage = id => {
     return http.post(req)
 }
 
+//IM启动群聊监听
+export const startListener = data => {
+    const req = {
+        data,
+        url: 'api/groupim/startlistener'
+    }
+    return http.post(req)
+}
+
 //IM发送群组图片消息
 export const sendGroupImgMessage = data => {
     const req = {
@@ -529,6 +547,24 @@ export const seedGetRechargeRecord = data => {
     const req = {
         data,
         url: 'http://101.132.177.123:3000/api/getRechargeList'
+    }
+    return http.post(req)
+}
+
+//seed获取充值汇率
+export const seedGetRechargeRate = data => {
+    const req = {
+        data,
+        url: 'http://test.gitium.io/gitium/charge/getRealTimeExchangeRate'
+    }
+    return http.post(req)
+}
+
+//seed获取充值记录
+export const seedGetTransferList = data => {
+    const req = {
+        data,
+        url: 'http://101.132.177.123:3000/api/getTransactionList'
     }
     return http.post(req)
 }
@@ -646,6 +682,15 @@ export const snsCancelLike = data => {
     const req = {
         data,
         url: 'api/sns/dyanmiclike/cancel'
+    }
+    return http.post(req)
+}
+
+//动态详情
+export const snsDynamicDetail = data => {
+    const req = {
+        data,
+        url: 'api/sns/dynamic/detail'
     }
     return http.post(req)
 }
@@ -791,6 +836,7 @@ export const snsCollectionSingleSave = data => {
     }
     return http.post(req)
 }
+
 //搜索所有用户和群组
 
 export const searchUserAndGroup = data => {
@@ -881,6 +927,32 @@ export const privacySetViewDynamicRange = data => {
     }
     return http.post(req)
 }
+
+//黑名单列表
+export const privacyBlacklist = data => {
+    const req = {
+        data,
+        url: 'api/uc/privacy/blacklist'
+    }
+    return http.post(req)
+}
+//添加黑名单
+export const privacyAddBlacklist = data => {
+    const req = {
+        data,
+        url: 'api/uc/privacy/addblacklist'
+    }
+    return http.post(req)
+}
+
+//移除黑名单
+export const privacyRemoveBlacklist = data => {
+    const req = {
+        data,
+        url: 'api/uc/privacy/removeblacklist'
+    }
+    return http.post(req)
+}
 // 判断用户是否购买该作者的作品或单个作品
 
 export const snsDynamicorderCheck = data => {
@@ -896,6 +968,42 @@ export const snsDynamicorderBuy = data => {
     const req = {
         data,
         url: 'api/sns/dynamicorder/buy'
+    }
+    return http.post(req)
+}
+
+// 动态打赏记录列表
+export const snsDynamicordRewardList = data => {
+    const req = {
+        data,
+        url: 'api/sns/dynamicreward/rewardlist'
+    }
+    return http.post(req)
+}
+
+// 打赏记录列表
+export const snsDynamicordList = data => {
+    const req = {
+        data,
+        url: 'api/sns/dynamicreward/list'
+    }
+    return http.post(req)
+}
+
+// 红包列表
+export const snsRedList = data => {
+    const req = {
+        data,
+        url: 'api/sns/redenvelope/record'
+    }
+    return http.post(req)
+}
+
+// 转账列表
+export const snstransferList = data => {
+    const req = {
+        data,
+        url: 'api/sns/transferaccounts/list'
     }
     return http.post(req)
 }
@@ -918,6 +1026,15 @@ export const sendRed = data => {
     return http.post(req)
 }
 
+//收红包
+export const getRed = data => {
+    const req = {
+        data,
+        url: 'api/sns/redenvelope/receive'
+    }
+    return http.post(req)
+}
+
 //设置作品价格
 export const snsWorkSet = data => {
     const req = {
@@ -932,6 +1049,158 @@ export const snsWorkInfo = data => {
     const req = {
         data,
         url: 'api/sns/setprice/info'
+    }
+    return http.post(req)
+}
+
+//我的空间信息
+export const cloudInfo = data => {
+    const req = {
+        data,
+        url: 'api/cloud/info'
+    }
+    return http.post(req)
+}
+
+//查找匹配空间
+export const cloudMatchStorage = data => {
+    const req = {
+        data,
+        url: 'api/cloud/storage/matchStorage'
+    }
+    return http.post(req)
+}
+
+//匹配方案详情
+export const cloudMatchStorageDetail = data => {
+    const req = {
+        data,
+        url: 'api/cloud/storage/matchStorageDetail'
+    }
+    return http.post(req)
+}
+
+//我的空间记录
+export const cloudStorageList = data => {
+    const req = {
+        data,
+        url: 'api/cloud/storage/list'
+    }
+    return http.post(req)
+}
+
+//立即购买,有多个订单 需要多个次支付 然后支付回调 支付成功hash
+export const cloudStorageBuy = data => {
+    const req = {
+        data,
+        url: 'api/cloud/storage/buy'
+    }
+    return http.post(req)
+}
+
+//支付回调
+
+export const cloudOrderCallback = data => {
+    const req = {
+        data,
+        url: 'api/cloud/order/pay/callback'
+    }
+    return http.post(req)
+}
+
+//发布云空间方案
+export const cloudStorageCreate = data => {
+    const req = {
+        data,
+        url: 'api/cloud/storage/create'
+    }
+    return http.post(req)
+}
+
+//查看云空间目录
+export const cloudGetAllFile = data => {
+    const req = {
+        data,
+        url: 'api/cloud/file/list'
+    }
+    return http.post(req)
+}
+
+//云空间创建目录
+export const cloudCreateFolder = data => {
+    const req = {
+        data,
+        url: 'api/cloud/file/createFolder'
+    }
+    return http.post(req)
+}
+
+//云空间更新目录名称
+export const cloudRename = data => {
+    const req = {
+        data,
+        url: 'api/cloud/file/rename'
+    }
+    return http.post(req)
+}
+
+//云空间上传文件
+export const cloudUploadFile = data => {
+    const req = {
+        data,
+        url: 'api/cloud/file/upload'
+    }
+    return http.form(req)
+}
+
+//云空间删除文件
+export const cloudDelete = data => {
+    const req = {
+        data,
+        url: 'api/cloud/file/delete'
+    }
+    return http.post(req)
+}
+
+//云空间下载文件
+export const cloudDownload = id => {
+    const req = {
+        url: 'api/cloud/file/download/' + id
+    }
+    return http.getFile(req)
+}
+
+//取消方案 在未知支付保证金情况下可以取消
+export const cloudStorageCancel = data => {
+    const req = {
+        data,
+        url: 'api/cloud/storage/cancel'
+    }
+    return http.post(req)
+}
+//
+//申请关闭，只能关闭已经出租的并且是自己发布的
+
+export const cloudStorageApplyClose = data => {
+    const req = {
+        data,
+        url: 'api/cloud/storage/applyClose'
+    }
+    return http.post(req)
+}
+//不同意关闭
+export const cloudStorageNoClose = data => {
+    const req = {
+        data,
+        url: 'api/cloud/storage/noClose'
+    }
+    return http.post(req)
+}
+//同意关闭
+export const cloudStorageYesClose = data => {
+    const req = {
+        data,
+        url: 'api/cloud/storage/yesClose'
     }
     return http.post(req)
 }

@@ -1,24 +1,26 @@
 <template>
     <div class="bg"
          v-if="$route.name==='feed'||$route.name==='user'">
-        <div class="bgImg">
-            <img :src="datas.photoPath"
-                 alt="">
-            <div class="cp"
-                 v-if="$route.name==='feed'"
-                 @click="__clickInput('photoWall')">
-                <p>{{$t('main.uploadcoverphotos')}}</p>
-                <span class="icon"></span>
+        <div class="cp upload"
+             v-if="$route.name==='feed'"
+             @click="__clickInput('photoWall')">
+            <p>{{$t('main.uploadcoverphotos')}}</p>
+            <span class="icon"></span>
 
+        </div>
+        <div class="bgImg">
+            <div>
+                <img :src="datas.photoPath"
+                     alt="">
             </div>
+
             <span></span>
         </div>
+
         <div class="info">
             <p>{{datas.nickname}}</p>
             <div class="avatar">
-                <img v-if="datas.avatar"
-                     :src="datas.avatar"
-                     alt="">
+                <Avatar :src="datas.avatar" />
                 <div class="cp"
                      v-if="$route.name==='feed'"
                      @click="__clickInput('avatar')">
@@ -29,7 +31,8 @@
         </div>
         <div v-if="$route.name==='user'"
              class="opt">
-            <div class="msg cp">{{$t('main.sendMsg')}}</div>
+            <div class="msg cp"
+                 @click='__chat'>{{$t('main.sendMsg')}}</div>
             <div class="add cp"
                  v-if="datas.isFriend==='0'"
                  @click="__add">{{$t('main.addFriend')}}</div>
@@ -56,7 +59,7 @@
 
 
 <script>
-import { mapState, mapActions } from 'vuex'
+import { mapState, mapActions, mapMutations } from 'vuex'
 
 export default {
     data() {
@@ -74,6 +77,7 @@ export default {
     },
     methods: {
         ...mapActions(['SET_USER_INFO']),
+        ...mapMutations(['REFRESH_USER_INFO', 'SET_WEBIM_List']),
         async __getDatas() {
             let req = {}
             if (this.$route.name === 'feed') {
@@ -82,10 +86,10 @@ export default {
                 req.id = this.$route.query.id
             }
             const res = await this.api.userInfo(req)
-            console.log(res, 'userInfo')
+
             this.datas = res.data
             if (this.$route.name === 'feed') {
-                localStorage.setItem('USERINFO', JSON.stringify(res.data))
+                this.REFRESH_USER_INFO(res.data)
             }
         },
         async __add() {
@@ -132,6 +136,19 @@ export default {
         __clickInput(n) {
             this.type = n
             this.$refs.UpFile.click()
+        },
+        __chat() {
+            let obj = {
+                userId: this.datas.userId,
+                userName: this.datas.nickname,
+                avatar: this.datas.avatar,
+                type: 'personal',
+                isShow: true,
+                width: '210px',
+                height: '168px',
+                msgList: []
+            }
+            this.SET_WEBIM_List(obj)
         }
     },
     watch: {
@@ -154,18 +171,22 @@ export default {
 <style lang='scss' scoped>
 .bg {
     position: relative;
-    height: 130px;
+    height: 220px;
     background: #dbdcdc;
     > .bgImg {
         position: relative;
-        height: 130px;
+        height: 100%;
         overflow: hidden;
-        > img {
-            position: absolute;
-            top: 50%;
-            left: 0;
-            width: 100%;
-            transform: translateY(-50%);
+        > div {
+            height: 100%;
+            overflow: auto;
+            img {
+                // position: absolute;
+                // top: 50%;
+                // left: 0;
+                width: 100%;
+                // transform: translateY(-50%);
+            }
         }
         > span {
             position: absolute;
@@ -179,39 +200,35 @@ export default {
                 rgba(0, 0, 0, 0.2) 80%
             );
         }
-        > div {
-            display: flex;
-            opacity: 0;
-            position: absolute;
-            right: 50px;
-            top: 5px;
-            background: rgba(0, 0, 0, 0.5);
-            align-items: center;
-            padding: 0 4px;
-            height: 18px;
-            line-height: 18px;
-            border-radius: 2px;
-            .icon {
-                margin-left: 3px;
-                width: 12px;
-                height: 9px;
-                background: url('./img/avatar_camera@2x.png') no-repeat center
-                    center;
-                background-size: 100% 100%;
-            }
-            > p {
-                text-align: center;
-                font-size: 10px;
-                color: #ffffff;
-            }
+    }
+    .upload {
+        display: flex;
+        opacity: 0;
+        position: absolute;
+        right: 10px;
+        top: 5px;
+        z-index: 1;
+        background: rgba(0, 0, 0, 0.5);
+        align-items: center;
+        padding: 0 4px;
+        height: 18px;
+        line-height: 18px;
+        border-radius: 2px;
+        .icon {
+            margin-left: 3px;
+            width: 12px;
+            height: 9px;
+            background: url('./img/avatar_camera@2x.png') no-repeat center
+                center;
+            background-size: 100% 100%;
+        }
+        > p {
+            text-align: center;
+            font-size: 10px;
+            color: #ffffff;
         }
     }
-    > .bgImg:hover {
-        > div {
-            opacity: 1;
-            transition: opacity 0.8s;
-        }
-    }
+
     .info {
         position: absolute;
         right: 60px;
@@ -230,13 +247,16 @@ export default {
             width: 120px;
             height: 120px;
             border-radius: 50%;
-            background: #ffffff;
+            background: #eff0f0;
             overflow: hidden;
             border: 2px solid #ffffff;
-
+            display: flex;
+            align-items: center;
+            justify-content: center;
             img {
-                width: 100%;
-                height: 100%;
+                object-fit: cover;
+                width: 120px;
+                height: 120px;
             }
 
             > div {
@@ -328,6 +348,12 @@ export default {
                 }
             }
         }
+    }
+}
+.bg:hover {
+    .upload {
+        opacity: 1;
+        transition: opacity 0.8s;
     }
 }
 </style>

@@ -48,6 +48,11 @@
         },
         "linux": {
             "icon": "build/icons"
+        },
+        "nsis": {   
+            "oneClick": false,   
+            "allowToChangeInstallationDirectory": true,   
+            "perMachine": true
         }
     },
     "dependencies": {
@@ -57,6 +62,7 @@
         "emoji-mart-vue": "^2.6.6",
         "file-saver": "^2.0.0",
         "gitium.seed.js": "^1.0.2",
+        "js-md5": "^0.7.3",
         "jszip": "^3.1.5",
         "qrcodejs2": "^0.0.2",
         "vue": "^2.5.16",

@@ -1,10 +1,41 @@
 <template>
     <div class="content mt16">
 
-        <div class="title ">
+        <div class="title">
             <p>{{$t('user.help')}}</p>
         </div>
+        <ul class="list">
+            <li>
+                <p>{{$t('user.helpAll[0][0]')}}</p>
+                <div>{{$t('user.helpAll[0][1]')}}</div>
+            </li>
+            <li>
+                <p>{{$t('user.helpAll[1][0]')}}</p>
+                <div>{{$t('user.helpAll[1][1]')}}</div>
+            </li>
+            <li>
+                <p>{{$t('user.helpAll[2][0]')}}</p>
+                <div>{{$t('user.helpAll[2][1]')}}</div>
 
+            </li>
+            <li>
+                <p>{{$t('user.helpAll[3][0]')}}</p>
+                <div>{{$t('user.helpAll[3][1]')}}</div>
+            </li>
+            <li>
+                <p>{{$t('user.helpAll[4][0]')}}</p>
+                <div>{{$t('user.helpAll[4][1]')}}</div>
+                <div>{{$t('user.helpAll[4][2]')}}</div>
+            </li>
+            <li>
+                <p>{{$t('user.helpAll[5][0]')}}</p>
+                <div>{{$t('user.helpAll[5][1]')}}</div>
+            </li>
+            <li>
+                <p>{{$t('user.helpAll[6][0]')}}</p>
+                <div>{{$t('user.helpAll[6][1]')}}</div>
+            </li>
+        </ul>
     </div>
 </template>
 
@@ -65,6 +96,20 @@ export default {
             color: #3f61a6;
             font-size: 14px;
             font-weight: bold;
+        }
+    }
+    .list {
+        li {
+            padding: 10px 0;
+            border-bottom: 1px solid #dbdcdc;
+            > p {
+                font-size: 14px;
+                font-weight: bold;
+                line-height: 26px;
+            }
+            div {
+                line-height: 30px;
+            }
         }
     }
 }

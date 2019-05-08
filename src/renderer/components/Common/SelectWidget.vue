@@ -10,8 +10,7 @@
                            @input="__inputing"
                            v-model="searchName"
                            :placeholder="$t('search')">
-                    <span class="search-icon"
-                          :class="{'focusIcon':focusIcon}"></span>
+                    <span class="search-icon"></span>
                 </div>
                 <div class="list">
                     <div class=" cp"
@@ -43,10 +42,11 @@
                          :key="index"
                          class="clearfix">
                         <div>
-                            <img v-if="item.avatar"
-                                 :src="item.avatar">
-                            <img v-else
-                                 :src="item.image">
+
+                            <Avatar v-if="item.avatar"
+                                    :src="item.avatar" />
+                            <Avatar v-else
+                                    :src="item.image" />
                         </div>
                         <div>
                             {{item.nickname || item.groupName}}
@@ -217,10 +217,9 @@ input {
         line-height: 25px;
         border: 1px solid #efefe0;
         background: #f5f6f7;
-        padding-left: 10px;
+        padding-left: 30px;
     }
     input::-webkit-input-placeholder {
-        padding-left: 16px;
     }
 }
 
@@ -260,11 +259,8 @@ input {
             background: #f1f1f1;
             img {
                 width: 100%;
-                // max-height: 100%;
-                position: absolute;
-                left: 50%;
-                top: 50%;
-                transform: translate(-50%, -50%);
+                height: 100%;
+                object-fit: cover;
             }
         }
         > div:nth-child(2) {

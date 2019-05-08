@@ -14,8 +14,10 @@
         <div class="send"
              @keyup.enter="__publish">
             <div class="inputer">
-                <img :src="userInfo.avatar"
-                     alt="">
+                <div class="img">
+
+                    <Avatar :src="userInfo.avatar" />
+                </div>
                 <p>{{userInfo.nickname}}</p>
                 <input :placeholder="$t('main.placeholder3')"
                        ref="TabInput"
@@ -102,24 +104,6 @@ import FeedUpload from './FeedUpload'
 export default {
     data() {
         return {
-            list: [
-                {
-                    name: this.$t('main.news'),
-                    class: 'news'
-                },
-                {
-                    name: this.$t('search'),
-                    class: 'search'
-                }
-                // {
-                //   name: '相片/影片相簿',
-                //   class: 'album'
-                // },
-                // {
-                //   name: '直播视讯',
-                //   class: 'video'
-                // }
-            ],
             dynamicDesc: '',
             uploadList: [],
             perimeter: 0,
@@ -145,6 +129,27 @@ export default {
             emojiState: state => state.Emoji.state,
             permission: state => state.Feed.accessMenuPermission
         }),
+
+        list() {
+            return [
+                {
+                    name: this.$t('main.news'),
+                    class: 'news'
+                },
+                {
+                    name: this.$t('search'),
+                    class: 'search'
+                }
+                // {
+                //   name: '相片/影片相簿',
+                //   class: 'album'
+                // },
+                // {
+                //   name: '直播视讯',
+                //   class: 'video'
+                // }
+            ]
+        },
         attachmentList() {
             let arr = this.uploadList.filter(item => item.flag)
             return arr.map(item => {
@@ -288,12 +293,21 @@ export default {
         margin: 5px 0;
         height: 50px;
         border-bottom: 1px solid #eff0f0;
-        img {
+        .img {
             width: 40px;
             height: 40px;
             border-radius: 50%;
             margin-right: 10px;
             overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #eff0f0;
+            img {
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+            }
         }
         input {
             flex-grow: 1;
@@ -321,6 +335,7 @@ export default {
         .opt {
             display: flex;
             flex-wrap: nowrap;
+
             > div {
                 border: 1px solid #c8c9c0;
                 border-radius: 40px;
@@ -331,24 +346,27 @@ export default {
                 align-items: center;
                 justify-content: center;
             }
+            > div:hover {
+                background: rgba($color: #525252, $alpha: 0.1);
+            }
             .album > .icon {
-                background-image: url(./img/home_edit_film@3x.png);
+                background-image: url('./img/home_edit_film@3x.png');
             }
 
             .emoji > .icon {
-                background-image: url(./img/home_edit_expression@3x.png);
+                background-image: url('./img/home_edit_expression@3x.png');
             }
             .more > .icon {
                 height: 4px;
                 margin-right: 0px;
-                background-image: url(./img/home_edit_more@3x.png);
+                background-image: url('./img/home_edit_more@3x.png');
             }
         }
 
         .s > .icon {
             height: 31px;
             width: 41px;
-            background-image: url(./img/send.png);
+            background-image: url('./img/send.png');
         }
     }
 }

@@ -1,6 +1,7 @@
 <template>
     <div class="mask mt16"
          v-if="parentDynamicId"
+         :style="{zIndex:zIndex}"
          @click.self="__out">
         <div class="content">
             <div class="title">
@@ -71,7 +72,6 @@ import SelectWidget from '@/components/Common/SelectWidget'
 export default {
     data() {
         return {
-            forwardRemark: this.$t('main.forwardRemark'), //转发说明
             remark: '',
             tabActive: 0
         }
@@ -84,8 +84,13 @@ export default {
             selectedList: state => state.Feed.selected,
             permission: state => state.Feed.accessMenuPermission,
             parentDynamicId: state => state.Feed.parentDynamicId,
-            dynamicItem: state => state.Feed.dynamicItem
-        })
+            dynamicItem: state => state.Feed.dynamicItem,
+            webIMList: state => state.WebImQueue.webIMList,
+            zIndex: state => state.Feed.zIndex
+        }),
+        forwardRemark() {
+            return this.$t('main.forwardRemark') //转发说明
+        }
     },
     methods: {
         ...mapMutations([
@@ -93,7 +98,8 @@ export default {
             'SET_FEED_MODAL_SELECTED',
             'SET_FEED_ACCESS_MENU_STATE',
             'SET_FEED_PARENT_DYNAMIC',
-            'SET_WEBIM_List'
+            'SET_WEBIM_List',
+            'SET_MSG_List'
         ]),
 
         async __publish() {
@@ -114,7 +120,10 @@ export default {
                 permission: this.permission,
                 parentDynamicId: this.parentDynamicId
             }
-            req = Object.assign(this.dynamicItem, req)
+            req = Object.assign(
+                JSON.parse(JSON.stringify(this.dynamicItem)),
+                req
+            )
             if (this.permission === 3) {
                 req.unvisibleUserIds = this.selectedList
                     .map(item => {
@@ -130,7 +139,6 @@ export default {
             }
             const res = await this.api.snsPublish(req)
 
-            console.log(res, 'res')
             if (res.code == 0) {
                 this.SET_FEED_MODAL_SELECTED([])
                 this.__publishSuccess()
@@ -139,10 +147,11 @@ export default {
         __publishSuccess() {
             this.$Toast(this.$t('main.shareSuccess'))
             this.__out()
+            this.$bus.emit('refresh' + this.$route.name)
         },
 
         __out() {
-            this.SET_FEED_PARENT_DYNAMIC({ item: {}, id: null })
+            this.SET_FEED_PARENT_DYNAMIC({ id: null })
             this.SET_FEED_ACCESS_MENU_STATE({ state: false })
         },
 
@@ -168,58 +177,108 @@ export default {
             } else if (res.hander === 'submit') {
                 console.log(res.data, 'submit')
                 let list = res.data
-                let msg = this.remark
+
                 list.forEach(item => {
-                    this.__sendIM(item, msg)
+                    this.__sendIM(item)
                 })
             }
         },
-        async __sendIM(item, msg) {
-            let obj = {}
-            let message = {
-                type: 0,
-                messageType: 1,
-                msg
-            }
-            if ('groupId' in item) {
-                obj = {
-                    userId: item.groupId,
-                    userName: item.groupName,
-                    avatar: item.image,
-                    type: 'group',
-                    isShow: true,
-                    width: '194px',
-                    height: '168px',
-                    msgList: [message]
+        async __sendIM(item) {
+            // 遍历当前展示聊天界面, 确认转发路径
+
+            for (var i = 0; i < 2; i++) {
+                let equalIdx = 0
+                let flag = this.webIMList.some((val, index) => {
+                    if (val.groupId) {
+                        if (val.groupId == item.groupId) equalIdx = index
+                        return val.groupId == item.groupId
+                    } else {
+                        if (val.userId == item.friendId) equalIdx = index
+                        return val.userId == item.friendId
+                    }
+                })
+                let msg = ''
+                let type = 11
+                if (i === 0) {
+                    let dynamicDesc = this.dynamicItem.dynamicDesc
+                    let contentList0 = this.dynamicItem.contentList[0]
+                    if (dynamicDesc.length > 10) {
+                        dynamicDesc = dynamicDesc.substring(0, 10) + '...'
+                    }
+                    msg = {
+                        dynamicDesc: dynamicDesc,
+                        dynamicId: this.dynamicItem.dynamicId,
+                        imageUrl: contentList0
+                            ? contentList0.videoImg || contentList0.imgUrl
+                            : ''
+                    }
+                } else {
+                    msg = this.remark
+                    type = 1
                 }
-            } else {
-                obj = {
-                    userId: item.friendId,
-                    userName: item.nickname,
-                    avatar: item.avatar,
-                    type: 'personal',
-                    isShow: true,
-                    width: '194px',
-                    height: '168px',
-                    msgList: [message]
+                let obj = {}
+                let message = {
+                    type: '0',
+                    messageType: type,
+                    msg
+                }
+                if (!msg) return
+                if ('groupId' in item) {
+                    obj = {
+                        userId: item.groupId,
+                        userName: item.groupName,
+                        avatar: item.image,
+                        type: 'group',
+                        isShow: true,
+                        width: '210px',
+                        height: '168px',
+                        msgList: [message]
+                    }
+                } else {
+                    obj = {
+                        userId: item.friendId,
+                        userName: item.nickname,
+                        avatar: item.avatar,
+                        type: 'personal',
+                        isShow: true,
+                        width: '210px',
+                        height: '168px',
+                        msgList: [message]
+                    }
+                }
+
+                if (flag) {
+                    this.SET_MSG_List({
+                        index: equalIdx,
+                        msg: message
+                    })
+                } else {
+                    this.SET_WEBIM_List(obj)
+                }
+                let para = {
+                    body: type == 11 ? JSON.stringify(msg) : msg,
+                    fromUserId: this.userInfo.userId,
+                    messageType: type,
+                    time: 0,
+                    toUserId: obj.userId,
+                    type: 'chat'
+                }
+                if ('groupId' in item) {
+                    para.type = 'groupchat'
+                    const res = await this.api.sendGroupMessage(para)
+                } else {
+                    const res = await this.api.sendMessage(para)
                 }
             }
 
-            this.SET_WEBIM_List(obj)
-
-            let para = {
-                body: msg,
-                fromUserId: this.userInfo.userId,
-                messageType: 1,
-                time: 0,
-                toUserId: obj.userId,
-                type: 'chat'
-            }
-            if (item.type == 'personal') {
-                const res = await this.api.sendMessage(para)
-            } else {
-                const res = await this.api.sendGroupMessage(para)
-            }
+            // let o = {
+            //     body: '',
+            //     fromUserId: 214,
+            //     messageType: 7,
+            //     time: 0,
+            //     toUserId: 206,
+            //     type: 'chat'
+            // }
         }
     },
     watch: {}
@@ -231,7 +290,6 @@ export default {
     position: fixed;
     top: 0;
     left: 0;
-    z-index: 100;
     width: 100%;
     height: 100%;
     background: rgba(0, 0, 0, 0.4);

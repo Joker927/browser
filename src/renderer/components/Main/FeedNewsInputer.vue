@@ -1,9 +1,11 @@
 <template>
     <div>
         <div class="inputer">
-            <img class="avatar"
-                 :src="userInfo.avatar"
-                 alt="">
+
+            <div class="img">
+                <Avatar class="avatar"
+                        :src="userInfo.avatar" />
+            </div>
             <div class="msg">
                 <div class="input">
                     <input type="text"
@@ -107,15 +109,23 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.avatar {
-    height: 36px;
-    width: 36px;
-    border-radius: 50%;
-    background: #000;
-}
 .inputer {
     display: flex;
     align-items: center;
+    .img {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        background: #eff0f0;
+        img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+    }
     .msg {
         display: flex;
         align-items: center;
@@ -125,6 +135,7 @@ export default {
         border-radius: 30px;
         border: 1px solid #e3e4e4;
         margin: 0 0 0 10px;
+
         .input {
             height: 34px;
             flex-grow: 1;

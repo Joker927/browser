@@ -26,8 +26,12 @@ export default {
         }
     },
     data() {
-        return {
-            i18n: {
+        return {}
+    },
+    components: { Picker },
+    computed: {
+        i18n() {
+            return {
                 search: this.$t('search'),
                 notfound: this.$t('emoji.notfound'),
                 categories: {
@@ -46,8 +50,6 @@ export default {
             }
         }
     },
-    components: { Picker },
-    computed: {},
     methods: {
         ...mapMutations(['SET_EMOJI_TEXT']),
         __addEmoji(emoji) {

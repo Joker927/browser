@@ -3,6 +3,9 @@ import axios from 'axios'
 import * as api from './api'
 
 import App from './App'
+
+import Avatar from '@/components/Avatar/index.js'
+
 import router from './router'
 import store from './store'
 import Toast from '@/commom/Toast'
@@ -11,6 +14,9 @@ import VueBus from 'vue-bus'
 import i18n from './lang'
 
 import tip from '@/directive/tip'
+
+Vue.use(Avatar)
+
 Vue.use(VueBus)
 Vue.prototype.$Toast = Toast.install
 

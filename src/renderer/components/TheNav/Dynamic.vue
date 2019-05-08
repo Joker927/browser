@@ -17,9 +17,10 @@
                     @click="__setSnsRead(item)">
                     <div class="NAV_MENU">
                         <div class="img NAV_MENU">
-                            <img class="NAV_MENU"
-                                 :src="item.avatar"
-                                 alt=""></div>
+
+                            <Avatar class="NAV_MENU"
+                                    :src="item.avatar" />
+                        </div>
                         <div class="info">
                             <p class="NAV_MENU">{{item.userName}}</p>
                             <p class="NAV_MENU">{{item.type| text(texts)}}</p>
@@ -48,8 +49,16 @@ export default {
     data() {
         return {
             type: 0,
-            list: [],
-            texts: [
+            list: []
+        }
+    },
+    components: {},
+    computed: {
+        ...mapState({
+            userInfo: state => state.UserInfo.userInfo
+        }),
+        texts() {
+            return [
                 this.$t('nav.state'),
                 this.$t('nav.state1'),
                 this.$t('nav.state2'),
@@ -58,12 +67,6 @@ export default {
                 this.$t('nav.state5')
             ]
         }
-    },
-    components: {},
-    computed: {
-        ...mapState({
-            userInfo: state => state.UserInfo.userInfo
-        })
     },
     filters: {
         date(value) {
@@ -203,12 +206,9 @@ export default {
             background: #000;
             margin-right: 10px;
             img {
-                position: absolute;
-                left: 50%;
-                top: 50%;
-                transform: translate(-50%, -50%);
-                max-width: 100%;
-                max-height: 100%;
+                object-fit: cover;
+                width: 32px;
+                height: 32px;
             }
         }
         li {

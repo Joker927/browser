@@ -18,8 +18,12 @@ import { mapMutations, mapState } from 'vuex'
 import { Picker } from 'emoji-mart-vue'
 export default {
     data() {
-        return {
-            i18n: {
+        return {}
+    },
+    components: { Picker },
+    computed: {
+        i18n() {
+            return {
                 search: this.$t('search'),
                 notfound: this.$t('emoji.notfound'),
                 categories: {
@@ -38,8 +42,6 @@ export default {
             }
         }
     },
-    components: { Picker },
-    computed: {},
     methods: {
         __addEmoji(emoji) {
             this.$emit('setEmoji', emoji.native)

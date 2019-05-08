@@ -1,16 +1,17 @@
 <template>
     <div class="contain">
         <div class="title">
-            {{$t('wallet.set')}}
+            {{$t('wallet.rewardList')}}
         </div>
-        <div class="contain">
-            <div class="input">
-                <span>{{$t('wallet.amount')}}:</span>
-                <input type="text" :placeholder="$t('wallet.money')" v-model="inputNum" />
-            </div>
-            <div class="btns">
-                <div class="fl" @click='__sure'>{{$t('confirm')}}</div>
-                <div class="fl">{{$t('cancel')}}</div>
+        <div class="opt">
+            <div v-for="(item,index) in opt" :key="index" :class="{active:optAc==index}" @click="__cutOpt(index)">{{item}}</div>
+        </div>
+        <div class="list">
+            <div v-for="(item,index) in list" :key="index" class="clearfix">
+                <div class="fl">{{item.rewardTime}}</div>
+                <div class="fl" v-if="optAc==0">{{item.authorName}}{{$t('wallet.forYou')}}</div>
+                <div class="fl" v-else>{{$t('wallet.youFor')}}{{item.authorName}}{{$t('main.reward')}}</div>
+                <div class="fr">{{item.rewardAmount}}{{item.currency}}</div>
             </div>
         </div>
     </div>
@@ -21,7 +22,9 @@ import { mapState, mapMutations } from "vuex";
 export default {
     data() {
         return {
-            inputNum: ""
+            opt: ["收到", "发出"],
+            optAc: 0,
+            list: []
         };
     },
     computed: {
@@ -31,13 +34,24 @@ export default {
     },
     components: {},
     mounted() {
-        // this.__getRewardInfo();
+        this.__getList(0);
     },
     methods: {
-        // async __getRewardInfo() {
-        //     console.log(this.userInfo)
-        //     const res = await this.api.ucGetRewardInfo(this.userInfo.userId);
-        // },
+        getTime(timestamp) {
+            var time = new Date(timestamp);
+            var ye = time.getFullYear();
+            var mn = time.getMonth() + 1;
+            var da = time.getDate();
+            var h = time.getHours();
+            var m = time.getMinutes();
+            var s = time.getSeconds();
+            mn = mn < 10 ? "0" + mn : mn;
+            da = da < 10 ? "0" + da : da;
+            h = h < 10 ? "0" + h : h;
+            m = m < 10 ? "0" + m : m;
+            s = s < 10 ? "0" + s : s;
+            return ye + "-" + mn + "-" + da + " " + h + ":" + m + ":" + s;
+        },
         async __sure() {
             let params = {
                 currency: "string",
@@ -48,6 +62,24 @@ export default {
             };
             const res = await this.api.ucRewardConfig(params);
             this.$Toast(res.msg);
+        },
+        //获取打赏记录列表,type==0,收到;type==1,发出
+        async __getList(type) {
+            let params = {
+                currentPage: 0,
+                pageSize: 100,
+                type: type,
+                userId: this.userInfo.userId
+            };
+            const res = await this.api.snsDynamicordList(params);
+            res.data.list.forEach(val => {
+                val.rewardTime = this.getTime(val.rewardTime);
+            })
+            this.list = res.data.list;
+        },
+        __cutOpt(index) {
+            this.optAc = index;
+            this.__getList(index);
         }
     },
     watch: {},
@@ -66,44 +98,28 @@ export default {
     border-bottom: 1px solid #dfdfe0;
     height: 60px;
     line-height: 60px;
-    > div:last-child {
-        color: #3f61a6;
-        font-size: 14px;
-    }
 }
-.input {
-    margin-top: 80px;
-    margin-left: 30px;
-    span {
-        color: #231815;
-        font-weight: 600;
-    }
-    input {
-        height: 30px;
-        width: 376px;
-        background: #efefef;
-        outline: none;
-        border: 1px solid #d6d6d6;
-        padding-left: 10px;
-        margin-left: 20px;
-    }
-}
-.btns {
-    margin: 50px;
+.opt {
+    height: 48px;
+    line-height: 48px;
+    display: flex;
+    font-size: 16px;
     > div {
-        width: 66px;
-        height: 32px;
-        line-height: 32px;
+        width: 88px;
         text-align: center;
-        border-radius: 2px;
     }
-    > div:first-child {
-        background: #3f61a6;
-        color: #fff;
+    .active {
+        border-bottom: 2px solid #3f61a6;
     }
-    > div:last-child {
-        background: #dbdcdc;
-        margin-left: 60px;
+}
+.list {
+    > div {
+        border-bottom: 1px solid #eaeaea;
+        > div {
+            height: 56px;
+            line-height: 56px;
+            margin: 0 30px 0 15px;
+        }
     }
 }
 </style>

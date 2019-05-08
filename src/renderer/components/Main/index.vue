@@ -33,9 +33,7 @@ export default {
     },
     watch: {
         $route: {
-            handler() {
-                console.log(this.$route)
-            },
+            handler() {},
             immediate: true
         }
     },
@@ -50,6 +48,12 @@ export default {
     height: 100%;
     .l {
         width: 62.5%;
+    }
+    .l ::-webkit-scrollbar-thumb {
+        background: rgba(153, 153, 153, 0.24);
+        border-radius: 10px;
+        border: 1px solid #ffffff;
+        display: none;
     }
     .r {
         width: 37.5%;

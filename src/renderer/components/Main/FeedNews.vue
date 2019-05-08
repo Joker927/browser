@@ -1,8 +1,11 @@
 <template>
-    <div class="feedNews mt16">
+    <div class="feedNews mt16"
+         v-if="item">
         <div class="info">
-            <img :src="item.avatar"
-                 alt="">
+            <div class="avatar cp"
+                 @click="__jump(item)">
+                <Avatar :src="item.avatar" />
+            </div>
             <div class="desc">
                 <p class="name">{{ item.userName }}</p>
                 <span class="time">{{ item.publishTime | date}}</span>
@@ -17,7 +20,8 @@
                     <p>{{$t('main.collection')}}</p>
                 </li>
                 <li v-if="item.userId!==userInfo.userId"
-                    class="cp"><span class="icon unblock"></span>
+                    class="cp"
+                    @click="__unBlock"><span class="icon unblock"></span>
                     <p>{{$t('main.block')}}</p>
                 </li>
                 <li class="cp"
@@ -32,13 +36,17 @@
         <div class="newDesc"
              :class="{'isForward':item.parentDynamicId}">
             <div class="txt"
-                 v-if="item.permission===5">{{cutStr}} <span v-if="item.dynamicDesc.length>20&&cutStr.length<23"
+                 v-if="item.permission===5&&item.userId!==userInfo.userId||item.parentPermission===5&&item.userId!==userInfo.userId">
+                <span v-html="$options.filters.isUrl(cutStr)"></span>
+                <span v-if="item.dynamicDesc.length>20&&cutStr.length==23&&!checked"
                       class="cp highlight"
-                      @click="__checkPermission(item)">{{$t('main.more')}}</span> </div>
+                      @click="__checkPermission">{{$t('main.more')}}</span> </div>
             <p class="txt"
-               v-else>{{ item.dynamicDesc }}</p>
-            <div class="content">
-                <div v-for="(ele,index) in item.contentList"
+               v-else
+               v-html="$options.filters.isUrl(item.dynamicDesc)"></p>
+            <div class="content"
+                 v-if="item.contentList&&item.contentList.length">
+                <div v-for="(ele,index) in item.contentList.slice(0,3)"
                      :key="index"
                      :class="{[classArr[index]]:true}"
                      @click="__preview(item.contentList,index,'0')">
@@ -62,11 +70,17 @@
 
         <div class="about">
             <div class="give"
-                 v-tip="$t('main.reward')"
-                 :class="{'reward':item.isReward ==='1'}"
-                 @click="__setReward(item)">
-                <span class="icon"></span>
-                <p>{{$t('main.reward')}}</p>
+                 :class="{'reward':item.isReward ==='1'}">
+                <div @click="__setReward(item)"
+                     v-tip="$t('main.reward')">
+                    <span class="icon"></span>
+                    <p>{{$t('main.reward')}}</p>
+                </div>
+                <router-link tag="p"
+                             :to="{name:'rewardList',params:{
+                                 dynamicId:item.dynamicId
+                             }}"
+                             class="go cp">{{item.rewardCount}}</router-link>
             </div>
             <div class="operate">
                 <div class="like cp"
@@ -78,7 +92,7 @@
 
                 <div class="share cp"
                      v-tip="$t('main.share')"
-                     @click=" __setForwardId(item)">
+                     @click="__setForwardId">
                     <span class="icon"></span>
                     <p>{{$t('main.share')}}</p>
                 </div>
@@ -114,10 +128,10 @@
             <div v-for="(ele,index) in comments.slice(0, checkMore)"
                  :key="index">
                 <div class="commentsList">
-                    <div class="img">
-                        <img class="avatar"
-                             :src="ele.avatar"
-                             alt="" />
+                    <div class="avatar cp"
+                         @click="__jump(ele)">
+
+                        <Avatar :src="ele.avatar" />
                     </div>
                     <div class="subject"
                          v-if="ele.contentVO">
@@ -176,10 +190,10 @@
                          v-for="(el, i) in ele.replyList"
                          :key="i">
                         <div class="commentsList">
-                            <div class="img">
-                                <img class="avatar"
-                                     :src="ele.avatar"
-                                     alt="" />
+                            <div class="avatar"
+                                 @click="__jump(ele)">
+
+                                <Avatar :src="ele.avatar" />
                             </div>
                             <div class="subject"
                                  v-if="el.contentVO">
@@ -302,7 +316,22 @@ export default {
             })
         },
         date(value) {
-            return format(new Date(value), 'yyyy-MM-dd', { locale: zhCN })
+            return format(new Date(value), 'yyyy-MM-dd hh:mm', {
+                locale: zhCN
+            })
+        },
+        isUrl(value) {
+            let reg = /(http:\/\/|https:\/\/)((\w|=|\?|\.*(:\d+)?|\/|&|-)+)/g
+            let str = value
+            if (reg.test(value)) {
+                let url = value.match(reg)[0]
+                let index = str.indexOf(url)
+
+                str = str.replace(reg, (a, b, c) => {
+                    return `<a class='link DynamicLink' href='javascript:;'  data-href=${a}> ${a}</a>`
+                })
+            }
+            return str
         }
     },
     methods: {
@@ -313,15 +342,71 @@ export default {
             'SET_FEED_PARENT_DYNAMIC',
             'SET_FEED_MENU_STATE',
             'SET_FEED_REWARD',
-            'SET_FEED_PAY_LOOK'
+            'SET_FEED_PAY_LOOK',
+            'ADD_TABS'
         ]),
+        __setDynamicLink() {
+            this.$nextTick(() => {
+                let hrefs = document.querySelectorAll('.DynamicLink')
+                hrefs.forEach((item, index) => {
+                    item.onclick = () => {
+                        var obj = {
+                            title: '',
+                            url: item.dataset.href
+                        }
+                        this.ADD_TABS(obj)
+                    }
+                })
+            })
+        },
+        async __unBlock() {
+            let res = {}
+            if (this.item.isFriend === '1') {
+                let req = {
+                    friendIds: [this.item.userId],
+                    type: 1,
+                    userId: this.userInfo.userId
+                }
+                res = await this.api.privacySetDynamicView(req)
+            } else {
+                let req = {
+                    blackIds: [this.item.userId],
+                    userId: this.userInfo.userId
+                }
+                res = await this.api.privacyAddBlacklist(req)
+            }
 
-        __setForwardId(item) {
-            let id = item.parentDynamicId || item.dynamicId
+            if (res.code === 0) {
+                this.$Toast(this.$t('success'))
+                this.$bus.emit('refreshfeed')
+            } else {
+                this.$Toast(res.msg)
+            }
+        },
+        //设置转发 TODO:目前二次转发会忽略转发动态的内容 只转发原始动态
+        async __setForwardId() {
+            let id = this.item.parentDynamicId || this.item.dynamicId
+            let permission = this.item.parentPermission || this.item.permission
+            let userId = this.item.parentUserId || this.item.userId
+
             this.SET_FEED_PARENT_DYNAMIC({
-                item,
+                item: this.item,
                 id
             })
+            // if (permission === 5 && this.item.userId !== this.userInfo.userId) {
+            //     await this.__checkPermission()
+            //     if (this.checked) {
+            //         this.SET_FEED_PARENT_DYNAMIC({
+            //             item: this.item,
+            //             id
+            //         })
+            //     }
+            // } else {
+            //     this.SET_FEED_PARENT_DYNAMIC({
+            //         item: this.item,
+            //         id
+            //     })
+            // }
         },
         __setReward(item) {
             let id = item.dynamicId
@@ -330,7 +415,7 @@ export default {
                 id
             })
         },
-
+        //评论
         async __setComment() {
             let data = {
                 text: this.text
@@ -367,6 +452,8 @@ export default {
                 this.$emit('refresh', this.item.dynamicId)
             }
         },
+
+        //点赞
         async __setLike() {
             let flag = this.item.likeFlag
             let req = {
@@ -390,10 +477,11 @@ export default {
                 this.$set(this.item, 'likeFlag', state)
             }
         },
+
+        //显示点赞列表
         __showLikeList(id) {
             this.SET_FEED_LIKE_STATE({ state: true, id })
             let dom = this.$refs.Like.getBoundingClientRect()
-            console.log(dom)
             let height = dom.height
             let top = dom.bottom
             this.SET_FEED_LIKE_STYLE({
@@ -401,6 +489,7 @@ export default {
                 top
             })
         },
+
         async __getCommentList(flag) {
             if (this.commentsShow && !flag) {
                 this.commentsShow = !this.commentsShow
@@ -411,7 +500,6 @@ export default {
                     pageSize: 100
                 }
                 const res = await this.api.snsCommentList(req)
-                console.log(res, 'res')
                 if (res.code === 0) {
                     this.comments = res.data.list
                     this.commentsShow = true
@@ -523,7 +611,6 @@ export default {
             this.checkMore = this.comments.length
         },
         async __preview(list, index, type) {
-            console.log('object')
             if (type === '1') {
                 list = [list]
                 this.SET_FEED_PREVIEW({
@@ -531,7 +618,12 @@ export default {
                     index
                 })
             } else {
-                if (this.item.permission === 5) {
+                let id = this.item.parentDynamicId || this.item.dynamicId
+                let userId = this.item.parentUserId || this.item.userId
+
+                let permission =
+                    this.item.parentPermission || this.item.permission
+                if (permission === 5 && userId !== this.userInfo.userId) {
                     await this.__checkPermission()
 
                     if (this.checked) {
@@ -539,10 +631,10 @@ export default {
                             list,
                             index
                         })
+                        await this.api.snsDynamicorderUpdate({
+                            dynamicId: id
+                        })
                     }
-                    await this.api.snsDynamicorderUpdate({
-                        dynamicId: this.item.dynamicId
-                    })
                 } else {
                     this.SET_FEED_PREVIEW({
                         list,
@@ -551,19 +643,20 @@ export default {
                 }
             }
         },
-        async __checkPermission(item) {
+        async __checkPermission() {
             this.checked = false
+            let id = this.item.parentDynamicId || this.item.dynamicId
+            let userId = this.item.parentUserId || this.item.userId
             let req = {
-                authorId: this.item.userId,
-                dynamicId: this.item.dynamicId
+                authorId: userId,
+                dynamicId: id
             }
             const res = await this.api.snsDynamicorderCheck(req)
-            console.log(res, '============')
             if (res.code === 500) {
                 this.$Toast(res.msg)
                 this.SET_FEED_PAY_LOOK({
-                    id: item.dynamicId,
-                    item: item
+                    id,
+                    item: this.item
                 })
             } else {
                 this.checked = true
@@ -585,10 +678,27 @@ export default {
             }
 
             const res = await this.api.snsCollectionSingleSave(req)
-            console.log(res, 'snsCollectSave')
             if (res.code === 0) {
                 this.$Toast(this.$t('main.toast5'))
                 this.SET_FEED_MENU_STATE(null)
+            }
+        },
+        async __jump(item) {
+            //
+            let id = item.userId
+            const res = await this.api.userInfo({ id })
+            this.$router.push({
+                name: 'user',
+                query: {
+                    id: res.data.userId,
+                    is: res.data.isFriend
+                }
+            })
+        },
+        //打赏数+1
+        __addReward(id) {
+            if (id == this.item.dynamicId) {
+                this.item.rewardCount++
             }
         }
     },
@@ -597,37 +707,49 @@ export default {
             if (this.checkMore !== 1) {
                 this.checkMore = this.comments.length
             }
+        },
+        checked() {
+            this.__setDynamicLink()
         }
     },
-    created() {}
+    created() {
+        this.__setDynamicLink()
+        this.$bus.on('add' + this.item.dynamicId, this.__addReward)
+    },
+    beforeDestroy() {
+        this.$bus.off('add' + this.item.dynamicId, this.__addReward)
+    }
 }
 </script>
 
 <style lang="scss" scoped>
+.avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    margin-right: 10px;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #eff0f0;
+    img {
+        object-fit: cover;
+        width: 36px;
+        height: 36px;
+    }
+}
 .feedNews {
     padding: 15px 0;
 
     background: #fff;
-    .avatar {
-        height: 36px;
-        width: 36px;
-        border-radius: 50%;
-        background: #000;
-    }
 
     .info {
         position: relative;
         padding: 10px 20px;
         display: flex;
         flex-wrap: nowrap;
-        img {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            overflow: hidden;
-            background: #000;
-            margin-right: 10px;
-        }
+
         .desc {
             margin-right: 20px;
         }
@@ -709,11 +831,14 @@ export default {
             position: relative;
             overflow: hidden;
             img {
-                position: absolute;
-                left: 50%;
-                top: 50%;
-                transform: translate(-50%, -50%);
-                width: 100%;
+                // position: absolute;
+                // left: 50%;
+                // top: 50%;
+                // transform: translate(-50%, -50%);
+                width: 540px;
+                height: 246px;
+                object-fit: cover;
+
                 background: rgba($color: #000000, $alpha: 0.2);
             }
             > div {
@@ -740,17 +865,14 @@ export default {
             margin-bottom: 4px;
         }
         .item2 {
-            width: 50%;
-            img {
-                margin-right: 4px;
-            }
+            width: calc(50% - 2px);
+            margin-right: 2px;
         }
         .item3 {
-            width: 50%;
+            width: calc(50% - 2px);
 
-            img {
-                margin-left: 4px;
-            }
+            margin-left: 2px;
+
             .remain {
                 display: block;
             }
@@ -807,10 +929,17 @@ export default {
         .give {
             display: flex;
             align-items: center;
+            > div {
+                display: flex;
+                align-items: center;
+            }
             .icon {
                 width: 14px;
                 height: 14px;
                 background-image: url('./img/dynamic_reward@2x.png');
+            }
+            .go {
+                margin-left: 10px;
             }
         }
         .reward {
@@ -880,7 +1009,7 @@ export default {
         .img {
         }
         .subject {
-            width: 100%;
+            // width: 100%;
             margin-left: 10px;
             > .name {
                 font-weight: bold;
@@ -919,6 +1048,10 @@ export default {
     }
     .ml45 {
         margin-left: 45px;
+    }
+
+    .link {
+        color: #3f61a6;
     }
 }
 </style>

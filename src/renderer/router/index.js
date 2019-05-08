@@ -61,6 +61,12 @@ export default new Router({
                             name: 'search',
                             component: require('@/components/Main/FeedSearch')
                                 .default
+                        },
+                        {
+                            path: '/rewardList/:dynamicId',
+                            name: 'rewardList',
+                            component: require('@/components/Main/FeedRewardList')
+                                .default
                         }
                     ]
                 },
@@ -102,9 +108,47 @@ export default new Router({
                     component: require('@/components/Collection/Pages').default
                 },
                 {
-                    path: '/cloud',
+                    path: '/cloud/:type',
                     name: 'cloud',
                     component: require('@/view/Cloud').default
+                },
+                {
+                    path: '/cloudSpace',
+                    name: 'cloudSpace',
+                    redirect: '/cloudSpaceAllFile',
+                    component: require('@/view/cloudSpace').default,
+                    children: [
+                        {
+                            path: '/cloudSpaceAllFile',
+                            name: 'cloudSpaceAllFile',
+                            component: require('@/components/Cloud/AllFile')
+                                .default
+                        },
+                        {
+                            path: '/cloudSpaceImg',
+                            name: 'cloudSpaceImg',
+                            component: require('@/components/Cloud/cloudSpaceImg')
+                                .default
+                        },
+                        {
+                            path: '/cloudSpaceDoc',
+                            name: 'cloudSpaceDoc',
+                            component: require('@/components/Cloud/cloudSpaceDoc')
+                                .default
+                        },
+                        {
+                            path: '/cloudSpaceLetter',
+                            name: 'cloudSpaceLetter',
+                            component: require('@/components/Cloud/cloudSpaceLetter')
+                                .default
+                        },
+                        {
+                            path: '/cloudSpaceMusic',
+                            name: 'cloudSpaceMusic',
+                            component: require('@/components/Cloud/cloudSpaceMusic')
+                                .default
+                        }
+                    ]
                 },
                 {
                     path: '/wallet',
@@ -116,6 +160,12 @@ export default new Router({
                             path: '/myWallet',
                             name: 'myWallet',
                             component: require('@/components/Wallet/MyWallet')
+                                .default
+                        },
+                        {
+                            path: '/currencyDetail/:currency',
+                            name: 'currencyDetail',
+                            component: require('@/components/Wallet/currencyDetail')
                                 .default
                         },
                         {
@@ -135,12 +185,22 @@ export default new Router({
                             name: 'bill',
                             component: require('@/components/Wallet/Bill')
                                 .default
+                        },
+                        {
+                            path: '/Recharge',
+                            name: 'Recharge',
+                            component: require('@/components/Wallet/Recharge')
+                                .default
                         }
                     ]
                 }
             ]
         },
-
+        {
+            path: '/load',
+            name: 'forceRefresh',
+            component: require('@/components/Loading').default
+        },
         {
             path: '*',
             redirect: '/'

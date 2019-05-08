@@ -233,18 +233,9 @@ export default {
     },
     data() {
         return {
-            menu: [
-                { class: 'tools', lang: this.$t('email.edit') },
-                { class: 'upload', lang: this.$t('email.attachment') },
-                { class: 'link', lang: this.$t('email.link') },
-                { class: 'emoji', lang: this.$t('email.emoji') },
-                { class: 'lock', lang: this.$t('email.isRepost') },
-                { class: 'trash', lang: this.$t('email.delete') }
-            ],
             toolBar: false,
             selectNum: null,
             emailTitle: '',
-            emailContent: this.$t('email.text5'),
             acceptUserId: null,
             attachment: [],
             attachmentTempIds: [],
@@ -280,6 +271,20 @@ export default {
         acceptUserIds() {
             return this.selectedList.map(item => item.userId)
         },
+        menu() {
+            return [
+                { class: 'tools', lang: this.$t('email.edit') },
+                { class: 'upload', lang: this.$t('email.attachment') },
+                { class: 'link', lang: this.$t('email.link') },
+                { class: 'emoji', lang: this.$t('email.emoji') },
+                { class: 'lock', lang: this.$t('email.isRepost') },
+                { class: 'trash', lang: this.$t('email.delete') }
+            ]
+        },
+        emailContent() {
+            return this.$t('email.text5')
+        },
+
         title() {
             let str = ''
             switch (this.titleStatus) {

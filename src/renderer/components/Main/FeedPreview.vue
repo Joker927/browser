@@ -1,6 +1,7 @@
 <template>
     <div class="mask"
          v-if="list.length"
+         :style="{zIndex:zIndex}"
          @click.self="__out">
         <div class="details">
             <div class="controls cp prev"
@@ -45,7 +46,8 @@ export default {
         ...mapState({
             userInfo: state => state.UserInfo.userInfo,
             list: state => state.Feed.previewList,
-            current: state => state.Feed.previewCurrent
+            current: state => state.Feed.previewCurrent,
+            zIndex: state => state.Feed.zIndex
         }),
         item() {
             return this.list[this.index]
@@ -127,8 +129,6 @@ export default {
     left: 0;
     right: 0;
     bottom: 0;
-    z-index: 1000;
-
     background: rgba(0, 0, 0, 0.8);
 }
 .details {

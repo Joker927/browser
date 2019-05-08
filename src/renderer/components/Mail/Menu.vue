@@ -14,7 +14,7 @@
                         <i class="icon"
                            :class=item.class></i>
                         <p>{{item.name}}</p>
-                        <span>{{item.num}}</span>
+                        <span v-if="item.num">{{item.num}}</span>
                     </li>
                 </ul>
                 <div class="out cp"
@@ -33,7 +33,18 @@ import Scroll from '@/commom/Scroll'
 export default {
     data() {
         return {
-            list: [
+            active: 0
+        }
+    },
+    components: { Scroll },
+    computed: {
+        ...mapState({
+            userInfo: state => state.UserInfo.userInfo,
+            editPanel: state => state.Mail.editPanel,
+            mailBridge: state => state.Mail.mailBridge
+        }),
+        list() {
+            return [
                 { name: this.$t('email.all'), num: 0, class: 'all' },
                 { name: this.$t('email.collection'), class: 'collection' },
                 { name: this.$t('email.backup'), class: 'backup' },
@@ -44,17 +55,8 @@ export default {
                 { name: this.$t('email.local'), class: 'local' },
                 { name: this.$t('email.trash'), class: 'trash' }
                 // { name: '收件夾', num: 2 }
-            ],
-            active: 0
+            ]
         }
-    },
-    components: { Scroll },
-    computed: {
-        ...mapState({
-            userInfo: state => state.UserInfo.userInfo,
-            editPanel: state => state.Mail.editPanel,
-            mailBridge: state => state.Mail.mailBridge
-        })
     },
     methods: {
         ...mapMutations(['SET_MAIL_STATE', 'SET_MAIL_PANEL_STATE']),
@@ -64,6 +66,9 @@ export default {
         __check(index, item) {
             this.active = index
             this.$emit('selected', item.class)
+            if (item.class === 'all') {
+                this.__getData()
+            }
         },
         __edit() {
             if (this.editPanel) return
@@ -77,11 +82,7 @@ export default {
             const res = await this.api.emailUnreadnum(req)
 
             if (res.code === 0) {
-                this.list.forEach((item, index) => {
-                    if (item.class === 'all') {
-                        this.$set(item, 'num', res.data)
-                    }
-                })
+                this.list[0].num = res.data
             }
         }
     },
@@ -92,6 +93,10 @@ export default {
     },
     created() {
         this.__getData()
+        this.$bus.on('refreshUnRead', this.__getData)
+    },
+    beforeDestroy() {
+        this.$bus.off('refreshUnRead', this.__getData)
     }
 }
 </script>
@@ -104,6 +109,8 @@ export default {
     width: 210px;
     border-right: 1px solid #e8e8e9;
     overflow: hidden;
+    background: #ffffff;
+
     .list {
         > li {
             display: flex;

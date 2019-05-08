@@ -10,11 +10,24 @@
                      @contextmenu="__showMenu($event,index)"
                      @click="__view(index)"
                      v-if="item.type===7">
-                    <div class="img">
-                        <img :src="item.dynamicVO.avatar"
-                             alt=""></div>
+                    <div class="img ">
+                        <Avatar :src="item.dynamicVO.avatar" />
+                    </div>
                     <div class="desc">
                         {{item.dynamicVO.dynamicDesc}}
+                    </div>
+                    <div class="instr">
+                        <p>{{item.collectionTime| date}}</p>
+                        <span></span>
+                    </div>
+                </div>
+
+                <div class="type"
+                     @contextmenu="__showMenu($event,index)"
+                     v-if="item.type===1&&type!==0">
+                    <div class="link cp desc"
+                         @click="__openUrl(item.collectionVOList[0].link)">
+                        {{item.collectionVOList[0].link}}
                     </div>
                     <div class="instr">
                         <p>{{item.collectionTime| date}}</p>
@@ -26,13 +39,38 @@
                      @click="__view(index)"
                      v-if="item.type===0&&type!==0">
                     <div class="img">
-                        <img :src="item.collectionVOList[0].videoImg"
+                        <img class="img0"
+                             v-if="item.collectionVOList[0].videoImg"
+                             :src="item.collectionVOList[0].videoImg"
                              alt="">
-                        <img :src="item.collectionVOList[0].imgUrl"
+                        <img class="img0"
+                             v-if="item.collectionVOList[0].imgUrl"
+                             :src="item.collectionVOList[0].imgUrl"
                              alt="">
                     </div>
                     <div class="desc">
 
+                    </div>
+                    <div class="instr">
+                        <p>{{item.collectionTime| date}}</p>
+                        <span></span>
+                    </div>
+                </div>
+                <div class="type"
+                     v-if="item.type===4&&item.chatContentList[0]"
+                     @contextmenu="__showMenu($event,index)">
+                    <div class="img"
+                         v-if='item.chatContentList[0]'>
+                        <Avatar :src="item.chatContentList[0].avatar" />
+
+                    </div>
+
+                    <div class="desc"
+                         v-if='item.chatContentList[0]'>
+                        <p>
+                            {{item.chatContentList[0].userName}}
+                        </p>
+                        <p>{{item.chatContentList[0].message}}</p>
                     </div>
                     <div class="instr">
                         <p>{{item.collectionTime| date}}</p>
@@ -44,9 +82,13 @@
                      @click="__view(index)"
                      v-if="item.type===0&&type===0">
                     <div class="img">
-                        <img :src="item.collectionVOList[0].videoImg"
+                        <img class="img0"
+                             v-if="item.collectionVOList[0].videoImg"
+                             :src="item.collectionVOList[0].videoImg"
                              alt="">
-                        <img :src="item.collectionVOList[0].imgUrl"
+                        <img class="img0"
+                             v-if="item.collectionVOList[0].imgUrl"
+                             :src="item.collectionVOList[0].imgUrl"
                              alt="">
                     </div>
                     <!-- <div class="instr">
@@ -64,6 +106,21 @@
             <div @click="__option(0)">{{$t('collect.forward')}}</div>
             <div @click="__option(1)">{{$t('collect.del')}}</div>
         </div>
+        <div class="mask"
+             v-if="dialogState"
+             @click.self="__out('dialogState')">
+            <div class="details">
+                <p class="title">{{$t('collect.dealTitle')}}</p>
+                <div class="btn">
+                    <span class="cp"
+                          :class="{'isLoading':isLoading}"
+                          @click="__del">{{$t('confirm')}}</span>
+                    <span class="cp"
+                          @click="__out('dialogState')">{{$t('cancel')}}</span>
+                </div>
+            </div>
+
+        </div>
     </div>
 </template>
 
@@ -72,19 +129,21 @@ import PagesPreview from './PagesPreview'
 
 import { mapState, mapMutations } from 'vuex'
 import { format, formatDistance, subDays } from 'date-fns'
-import { zhCN, el } from 'date-fns/locale'
+import { zhCN } from 'date-fns/locale'
 export default {
     data() {
         return {
             type: '',
             list: [],
             viewState: false,
+            dialogState: false,
             viewItem: {},
             active: 0,
             menuStyle: {
                 top: -100,
                 left: -100
-            }
+            },
+            isLoading: false
         }
     },
     components: { PagesPreview },
@@ -92,6 +151,19 @@ export default {
         ...mapState({
             userInfo: state => state.UserInfo.userInfo
         })
+        // isUrl(value) {
+        //     let reg = /(http:\/\/|https:\/\/)((\w|=|\?|\.*(:\d+)?|\/|&|-)+)/g
+        //     let str = value
+        //     if (reg.test(value)) {
+        //         let url = value.match(reg)[0]
+        //         let index = str.indexOf(url)
+
+        //         str = str.replace(reg, (a, b, c) => {
+        //             return `<a class='link DynamicLink' href='javascript:;'  data-href=${a}> ${a}</a>`
+        //         })
+        //     }
+        //     return str
+        // }
     },
     filters: {
         distance(value) {
@@ -100,10 +172,11 @@ export default {
             })
         },
         date(value) {
-            return format(new Date(value), 'yyyy-MM-dd', { locale: zhCN })
+            return format(new Date(value), 'yyyy-MM-dd hh:mm', { locale: zhCN })
         }
     },
     methods: {
+        ...mapMutations(['ADD_TABS']),
         __showMenu(e, index) {
             this.menuStyle = {
                 top: e.clientY,
@@ -111,27 +184,36 @@ export default {
             }
             this.active = index
         },
-        async __option(index) {
+        __option(index) {
             this.menuStyle = {
                 top: -100,
                 left: -100
             }
             if (index === 0) {
             } else {
-                let id = this.list[this.active]['collectionId']
-                const res = await this.api.snsCollectionDelete({
-                    ids: [id]
-                })
-                if (res.code === 0) {
-                    this.$Toast(this.$t('collect.toast'))
-                    this.list = this.list.filter(
-                        item => item.collectionId !== id
-                    )
-                }
+                this.dialogState = true
             }
         },
-        __out() {
-            this.viewState = false
+        async __del() {
+            if (this.isLoading) return
+            this.isLoading = true
+            let id = this.list[this.active]['collectionId']
+            const res = await this.api.snsCollectionDelete({
+                ids: [id]
+            })
+            if (res.code === 0) {
+                this.$Toast(this.$t('collect.toast'))
+                this.list = this.list.filter(item => item.collectionId !== id)
+            }
+            this.__out('dialogState')
+            this.isLoading = false
+        },
+        __openUrl(url) {
+            var obj = { isShow: true, title: '', url: url }
+            this.ADD_TABS(obj)
+        },
+        __out(state) {
+            this[state] = false
         },
         __view(index) {
             this.menuStyle = {
@@ -170,6 +252,9 @@ export default {
             handler(oldValue, newValue) {
                 if (this.$route.name === 'collection') {
                     this.type = this.$route.params.type
+                    if (this.type !== '') {
+                        this.type = Number(this.type)
+                    }
                     let oldName = oldName && oldValue.name
                     let newName = newValue && newValue.name
                     if (oldName !== newName) this.list = []
@@ -196,30 +281,40 @@ export default {
     width: 75%;
     overflow: hidden;
     .item {
-        width: 100%;
-        padding: 20px 0;
-        border-bottom: 1px solid #e6e6e6;
         img {
             max-width: 100%;
         }
+
         .type {
-            display: flex;
+            // display: flex;
             width: 100%;
+            padding: 15px 0;
+            border-bottom: 1px solid #e6e6e6;
+            overflow: hidden;
             .img {
+                float: left;
                 height: 76px;
                 width: 76px;
                 margin-right: 10px;
                 overflow: hidden;
                 // background: #000;
             }
+            .img0 {
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+            }
+
             .desc {
+                float: left;
                 overflow: hidden;
                 white-space: nowrap;
                 text-overflow: ellipsis;
-                width: calc(100% - 176px);
+                width: 500px;
             }
             .instr {
-                width: 100px;
+                float: right;
+                width: 150px;
                 margin: 0 10px;
             }
         }
@@ -237,6 +332,11 @@ export default {
         border-bottom: none;
         padding: 0;
         margin: 10px 10px 0 0;
+        img {
+            width: 100px;
+            height: 100px;
+            object-fit: cover;
+        }
     }
 }
 .menu {
@@ -251,5 +351,51 @@ export default {
         padding-left: 10px;
         border-bottom: 1px solid #dbdcdc;
     }
+}
+.mask {
+    position: fixed;
+    top: 80px;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 1000;
+    background: rgba(0, 0, 0, 0.8);
+    overflow: auto;
+}
+.details {
+    position: absolute;
+    left: 50%;
+    top: 55%;
+    width: 200px;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    background: #ffffff;
+    .title {
+        height: 45px;
+        line-height: 45px;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    }
+    .btn {
+        display: flex;
+        justify-content: space-around;
+        align-items: center;
+        height: 40px;
+        line-height: 40px;
+        span {
+            flex-grow: 1;
+        }
+        .isLoading {
+            background: url('./img/loading.gif') no-repeat 10px center;
+            background-size: 20px 20px;
+        }
+        > :nth-of-type(1) {
+            // background: #000;
+            border-right: 1px solid rgba(0, 0, 0, 0.1);
+        }
+    }
+}
+.link {
+    color: #3f61a6;
+    flex-grow: 1;
 }
 </style>

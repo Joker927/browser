@@ -7,6 +7,10 @@ const baseURL = 'http://139.196.98.22:8081/angel/'
 axios.interceptors.request.use(
     config => {
         let token = window.localStorage.getItem('TOKEN')
+        let language = window.localStorage.getItem('LANGUAGE')
+        if (language) {
+            config.headers['Accept-Language'] = language
+        }
         if (token) {
             config.headers.token = token
         }
@@ -63,7 +67,7 @@ export default {
             baseURL: baseURL,
             url: req.url,
             data: req.data,
-            timeout: 10000,
+            timeout: 120000,
             headers: {
                 'X-Requested-With': 'XMLHttpRequest',
                 'Content-Type': 'application/json; charset=UTF-8'
@@ -100,6 +104,21 @@ export default {
             method: 'get',
             baseURL: baseURL,
             url: req.url,
+            params: req.data, // get 请求时带的参数
+            timeout: 10000,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        }).then(response => {
+            return checkStatus(response)
+        })
+    },
+    getFile(req) {
+        return axios({
+            method: 'get',
+            baseURL: baseURL,
+            url: req.url,
+            responseType: 'arraybuffer',
             params: req.data, // get 请求时带的参数
             timeout: 10000,
             headers: {

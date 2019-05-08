@@ -1,6 +1,7 @@
 <template>
     <div class="mask"
-         v-if="state">
+         v-if="state"
+         :style="{zIndex:zIndex}">
 
         <div class="box">
             <div class="title">{{title}}
@@ -22,7 +23,7 @@
                      class="clearfix cp"
                      @click="__select(item)">
                     <div>
-                        <img :src="item.avatar" />
+                        <Avatar :src="item.avatar" />
                     </div>
                     <div>
                         {{item.nickname}}
@@ -59,7 +60,8 @@ export default {
             userInfo: state => state.UserInfo.userInfo,
             state: state => state.Feed.modalState,
             title: state => state.Feed.title,
-            selectedList: state => state.Feed.selected
+            selectedList: state => state.Feed.selected,
+            zIndex: state => state.Feed.zIndex
         })
     },
     watch: {},
@@ -122,7 +124,6 @@ input {
     position: fixed;
     top: 0;
     left: 0;
-    z-index: 1000;
     width: 100%;
     height: 100%;
     background: rgba(0, 0, 0, 0.4);

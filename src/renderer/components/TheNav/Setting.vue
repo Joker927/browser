@@ -16,8 +16,16 @@
 import { mapState, mapMutations, mapActions } from 'vuex'
 export default {
     data() {
-        return {
-            menuList: [
+        return {}
+    },
+    components: {},
+    computed: {
+        ...mapState({
+            userInfo: state => state.UserInfo.userInfo,
+            token: state => state.UserInfo.token
+        }),
+        menuList() {
+            return [
                 [
                     {
                         title: this.$t('nav.setting'),
@@ -48,22 +56,17 @@ export default {
             ]
         }
     },
-    components: {},
-    computed: {
-        ...mapState({
-            userInfo: state => state.UserInfo.userInfo,
-            token: state => state.UserInfo.token
-        })
-    },
     methods: {
         ...mapMutations(['GET_USER_INFO']),
         ...mapActions(['LOG_OUT']),
         __do(name) {
             if (name === 'logout') {
-                this.LOG_OUT().then(() => {
-                    this.GET_USER_INFO()
-                    this.$router.push({
-                        name: 'login'
+                this.api.loginOut({ id: this.userInfo.userId }).then(() => {
+                    this.LOG_OUT().then(() => {
+                        this.GET_USER_INFO()
+                        this.$router.push({
+                            name: 'login'
+                        })
                     })
                 })
             } else {

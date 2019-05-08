@@ -1,6 +1,6 @@
 import * as api from '@/api'
 
-const delay = 30000000
+const delay = 180000
 const timer = {
     requestsTimer: null,
     dynamicTimer: null

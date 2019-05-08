@@ -17,9 +17,8 @@
                     @click="__setSnsRead(item)">
                     <div class="">
                         <div class="img">
-                            <img class=""
-                                 :src="item.avatar"
-                                 alt=""></div>
+                            <Avatar :src="item.avatar" />
+                        </div>
                         <div class="info">
                             <p class="">{{item.userName}}</p>
                             <p class="">{{item.type| text(texts)}}</p>
@@ -46,8 +45,16 @@ export default {
             list: [],
             requestCompleted: false,
             totalPage: 0,
-            routerName: '',
-            texts: [
+            routerName: ''
+        }
+    },
+    components: {},
+    computed: {
+        ...mapState({
+            userInfo: state => state.UserInfo.userInfo
+        }),
+        texts() {
+            return [
                 this.$t('main.state'),
                 this.$t('main.state1'),
                 this.$t('main.state2'),
@@ -56,12 +63,6 @@ export default {
                 this.$t('main.state5')
             ]
         }
-    },
-    components: {},
-    computed: {
-        ...mapState({
-            userInfo: state => state.UserInfo.userInfo
-        })
     },
     filters: {
         date(value) {

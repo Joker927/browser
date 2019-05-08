@@ -10,11 +10,14 @@
                     v-for="(item,index) in list"
                     :key="index">
                     <div>
-                        <div class="img"><img :src="item.avatar"
-                                 alt=""></div>
+                        <div class="img"
+                             @click="__jump(item)">
+                            <Avatar :src="item.avatar" />
+                        </div>
                         <span>{{item.nickname}}</span>
                     </div>
-                    <ButtonFirend :item='item'></ButtonFirend>
+                    <ButtonFirend :item='item'
+                                  :index='index'></ButtonFirend>
                 </li>
 
             </ul>
@@ -24,8 +27,9 @@
                     v-for="(item,index) in list"
                     :key="index">
                     <div>
-                        <div class="img "><img :src="item.image"
-                                 alt=""></div>
+                        <div class="img ">
+                            <Avatar :src="item.image" />
+                        </div>
                         <span class="name ">{{item.groupName}}</span>
                     </div>
                     <ButtonGroup :item='item'
@@ -92,6 +96,15 @@ export default {
                     break
             }
             console.log(typeof this.type)
+        },
+        __jump(item) {
+            this.$router.push({
+                name: 'user',
+                query: {
+                    id: item.userId,
+                    is: item.isFriend
+                }
+            })
         }
     },
 
@@ -137,8 +150,13 @@ export default {
             height: 36px;
             border-radius: 50%;
             overflow: hidden;
-            background: #000;
+            // background: #000;
             margin-right: 10px;
+            > img {
+                object-fit: cover;
+                width: 36px;
+                height: 36px;
+            }
         }
         > li {
             font-size: 12px;

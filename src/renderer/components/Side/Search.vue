@@ -30,13 +30,19 @@
                         </div>
                         <ul class="list">
                             <li class="lis cp"
-                                @click="__jump(item)"
                                 v-for="(item,index) in userList"
                                 :key="index">
-                                <img class="img"
-                                     :src="item.avatar"
-                                     alt="">
-                                <span class="name">{{item.remarkName||item.nickname||item.userName}} </span>
+
+                                <Avatar class="img"
+                                        @click="__jump(item)"
+                                        :src="item.avatar" />
+                                <span class="name"
+                                      @click="__jump(item)">{{item.remarkName||item.nickname||item.userName}} </span>
+                                <span class="add cp"
+                                      @click="__addFriend(item)"
+                                      v-if="!item.flag">{{$t('main.add')}}</span>
+                                <span class="add requested"
+                                      v-else>{{$t('main.requested')}}</span>
                             </li>
                         </ul>
                         <a href="javascript:;"
@@ -53,10 +59,15 @@
                             <li class="lis cp"
                                 v-for="(item,index) in groupList"
                                 :key="index">
-                                <img class="img"
-                                     :src="item.image"
-                                     alt="">
+
+                                <Avatar class="img"
+                                        :src="item.image" />
                                 <span class="name">{{item.groupName}} </span>
+                                <span class="add cp"
+                                      @click="__addGroup(item)"
+                                      v-if="!item.flag">{{$t('main.join')}}</span>
+                                <span class="add requested"
+                                      v-else>{{$t('main.requested')}}</span>
                             </li>
                         </ul>
                         <a href="javascript:;"
@@ -141,6 +152,27 @@ export default {
                     is: item.isFriend
                 }
             })
+        },
+        async __addGroup(item) {
+            let data = {
+                groupId: item.groupId,
+                requesterId: this.userInfo.userId
+            }
+
+            const res = await this.api.groupApply(data)
+            if (res.code == 0) {
+                this.$set(item, 'flag', true)
+            }
+
+            this.$bus.emit('getData')
+        },
+        async __addFriend(item) {
+            let data = {
+                requesterId: item.userId
+            }
+            const res = await this.api.friendApply(data)
+            this.$set(item, 'flag', true)
+            this.$bus.emit('getData')
         }
     },
     components: {},
@@ -224,6 +256,7 @@ export default {
 .list {
     overflow: hidden;
     .lis {
+        position: relative;
         height: 40px;
         // line-height: 26px;
         // margin-top: 6px;
@@ -234,8 +267,27 @@ export default {
             height: 30px;
             margin-right: 4px;
             border-radius: 50%;
-            background: #000;
             overflow: hidden;
+            background: #eff0f0;
+            img {
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+                background: #eff0f0;
+            }
+        }
+        .add {
+            position: absolute;
+            right: 0;
+            background: #3f61a6;
+            color: #ffffff;
+            padding: 0 5px;
+            font-size: 12px;
+            // top: 0;
+        }
+        .requested {
+            color: #000;
+            background: #dbdcdc;
         }
         .name {
             width: 110px;

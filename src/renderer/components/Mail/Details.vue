@@ -6,8 +6,11 @@
                 <span class="icon back"
                       @click="__close"></span>
 
-                <span class="icon cloud"></span>
+                <span class="icon cloud"
+                      v-if="item.isClouds!==1&&isLocal"
+                      @click="__cloudSave"></span>
                 <span class="icon local"
+                      v-if="isLocal"
                       @click="__localSave"></span>
                 <span class="icon trash"></span>
 
@@ -142,13 +145,48 @@ export default {
     computed: {
         ...mapState({
             userInfo: state => state.UserInfo.userInfo
-        })
+        }),
+        isLocal() {
+            let userMail = localStorage.getItem('USERMAIL') || {}
+            if (typeof userMail === 'string') {
+                userMail = JSON.parse(userMail)
+            }
+            let userId = this.userInfo.userId
+
+            if (userId in userMail) {
+            } else {
+                userMail[userId] = []
+            }
+            let mailId = this.item.id
+            let flag = true
+            for (var i = 0; i < userMail[userId].length; i++) {
+                if (userMail[userId][i].id === mailId) {
+                    flag = false
+                    // this.$Toast('')
+                    break
+                }
+            }
+            return flag
+        }
     },
     methods: {
         ...mapMutations(['SET_MAIL_LIST_STATE', 'SET_MAIL_PANEL_STATE']),
 
         __close() {
             this.$emit('close', false)
+        },
+        async __cloudSave() {
+            let ids = [this.item.id]
+            let isClouds = this.item.isClouds != 1 ? 1 : 2
+            let req = {
+                isClouds: isClouds,
+                ids: ids,
+                userId: this.userInfo.userId
+            }
+
+            const res = await this.api.emailOperate(req)
+            if (res.code !== 0) return
+            this.$Toast(this.$t('success'))
         },
         __downloadAll() {
             const zip = new JSZip()
@@ -244,10 +282,13 @@ export default {
             for (var i = 0; i < userMail[userId].length; i++) {
                 if (userMail[userId][i].id === mailId) {
                     flag = false
+                    // this.$Toast('')
                     break
                 }
             }
             if (flag) {
+                this.$Toast(this.$t('success'))
+
                 this.item.isLocal = true
                 userMail[userId].push(this.item)
                 localStorage.setItem('USERMAIL', JSON.stringify(userMail))
@@ -266,7 +307,11 @@ export default {
             })
         }
     },
-    watch: {},
+    watch: {
+        $route() {
+            console.log(this.$route, 'route')
+        }
+    },
     created() {}
 }
 </script>

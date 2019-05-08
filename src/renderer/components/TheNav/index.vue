@@ -11,16 +11,25 @@
             </div>
             <div class="address">
                 <input type="text"
+                       id="TabAddress"
                        v-model="address"
                        v-on:keyup.13="__goAddress">
+                <div class="collect iconr"
+                     @click="__addCollect"
+                     v-if="!homeShow&&token&&urlState">
+                </div>
+                <div class="collect iconr active"
+                     @click="__delCollect"
+                     v-if="!homeShow&&token&&urlCollectionId"></div>
             </div>
-            <div class="menu ">
+            <div class="menu"
+                 v-if="homeShow">
                 <div class="userInfo cp"
                      v-if="token">
                     <div class="avatar iconr">
-                        <img v-if="userInfo.avatar"
-                             :src="userInfo.avatar"
-                             alt="">
+
+                        <Avatar :src="userInfo.avatar"></Avatar>
+
                     </div>
                     <div class="name">{{userInfo.nickname}}</div>
                 </div>
@@ -28,8 +37,7 @@
                      v-else>
                     <div class="avatar iconr"
                          @click="__jump('/login')">
-                        <img src=""
-                             alt="">
+                        <Avatar></Avatar>
                     </div>
                     <div class="name"
                          @click="__jump('/login')">{{$t('nav.notlogin')}}</div>
@@ -37,8 +45,6 @@
                 <div class="home iconr"
                      :class="{'disable':!token,'active':pageActive===0}"
                      @click="__jump('/home')"></div>
-                <!-- <div class="collect iconr"
-                     :class="{'disable':!token,'active':pageActive===1}"></div> -->
                 <Badge @click="__changeCount(1)"
                        :value='requestsCount'>
                     <div class="friends iconr NAV_MENU"
@@ -46,10 +52,15 @@
                     </div>
                 </Badge>
 
-                <!-- <div class="msg iconr"></div> -->
-                <!-- <div class="cloud iconr" :class="{'disable':!token}" @click="__jump('cloud')"></div> -->
-                <div class="cloud iconr"
-                     :class="{'disable':!token,'active':pageActive===3}"></div>
+                <div class="email iconr"
+                     @click="__emailShow"
+                     :class="{'disable':!token,'active':mailState}"></div>
+
+                <router-link tag="div"
+                             :to="{name:'cloud',params:{type:0}}"
+                             class="cloud iconr"
+                             :class="{'disable':!token,'active': pageActive===3}">
+                </router-link>
                 <div class="wallet iconr NAV_MENU"
                      :class="{'open':menuState==2,'disable':!token,'active':pageActive===4}"
                      @click="__changeCount(2)"></div>
@@ -78,17 +89,20 @@
 
 <script>
 import { mapState, mapMutations, mapActions } from 'vuex'
+
 import Requests from './Requests'
 import Question from './Question'
 import Setting from './Setting'
 import Dynamic from './Dynamic'
 import Wallet from './Wallet'
 import Badge from '@/commom/Badge'
+import { fail } from 'assert'
 export default {
     data() {
         return {
             address: '',
-            pageActive: null
+            pageActive: null,
+            urls: []
         }
     },
     computed: {
@@ -98,31 +112,55 @@ export default {
             menuState: state => state.Visible.menuState,
             tabIdx: state => state.Tabs.tabIdx,
             requestsCount: state => state.Timer.requestsCount,
-            dynamicCount: state => state.Timer.dynamicCount
-        })
-    },
+            dynamicCount: state => state.Timer.dynamicCount,
+            mailState: state => state.Mail.mailState,
+            homeShow: state => state.Tabs.homeShow,
+            tabs: state => state.Tabs.tabs
+        }),
+        urlState() {
+            let address = this.__hasPrefix(this.address)
+            return this.tabs.some((item, index) => {
+                return address === item.url
+            })
+        },
+        urlCollectionId() {
+            let id = null
+            let address = this.__hasPrefix(this.address)
 
+            for (var i = 0; i < this.urls.length; i++) {
+                const item = this.urls[i]
+                const url = item.collectionVOList[0].link
+
+                if (address === url) {
+                    id = item.collectionId
+                    break
+                }
+            }
+            return id
+        }
+    },
     components: { Requests, Question, Setting, Dynamic, Wallet, Badge },
     watch: {
         tabIdx: {
-            handler(newVal) {
-                if (newVal != '-1') {
+            handler() {
+                if (this.tabIdx !== -1) {
+                    let index = this.tabIdx
                     const webview = document.getElementsByClassName('webview')[
-                        newVal
+                        index
                     ]
                     webview.addEventListener('dom-ready', () => {
-                        let index = newVal
                         let title = webview.getTitle()
-                        this.SET_TAB_TITLE({ index, title })
+                        this.SET_TAB_ATTR({ index, key: 'title', value: title })
                     })
+                    this.address = this.tabs[this.tabIdx].url
+                } else {
+                    this.address = ''
                 }
-            },
-            deep: true
+            }
+            // deep: true
         },
         $route: {
             handler() {
-                // console.log(this.$route, '11111')
-
                 switch (this.$route.name) {
                     case 'feed':
                         this.pageActive = 0
@@ -131,6 +169,9 @@ export default {
                     case 'group':
                     case 'friends':
                         this.pageActive = 2
+                        break
+                    case 'cloud':
+                        this.pageActive = 3
                         break
                     case 'myWallet':
                     case 'personalWorks':
@@ -150,42 +191,144 @@ export default {
     },
     mounted() {},
     methods: {
-        ...mapMutations(['SET_NAV_MENU_STATE', 'ADD_TABS', 'SET_TAB_TITLE']),
-        ...mapActions(['SET_BADGE_COUNT']),
+        ...mapMutations([
+            'SET_NAV_MENU_STATE',
+            'ADD_TABS',
+            'SET_MAIL_STATE',
+            'SHOW_HOME',
+            'SET_TAB_ATTR',
+            'SET_LOADING_STATE'
+        ]),
+        ...mapActions(['SET_BADGE_COUNT', 'REFRESH_HOME']),
         __setHistory(count) {
-            history.go(count)
-            console.log(history)
+            if (this.tabIdx !== -1) {
+                const webview = document.getElementsByClassName('webview')[
+                    this.tabIdx
+                ]
+                webview.history.go(count)
+            } else {
+                history.go(count)
+            }
         },
         __reload() {
             const webview = document.getElementsByClassName('webview')[
                 this.tabIdx
             ]
-            webview.reload()
+            if (webview) {
+                webview.reload()
+            } else if (this.homeShow) {
+                this.SET_LOADING_STATE(true)
+                let fullPath = this.$route.fullPath
+                this.$router.replace(
+                    {
+                        name: 'forceRefresh'
+                    },
+                    () => {
+                        setTimeout(() => {
+                            this.SET_LOADING_STATE(false)
+                            this.$router.replace({
+                                path: fullPath
+                            })
+                        }, 100)
+                    }
+                )
+            }
         },
         __changeCount(n) {
-            console.log(n)
             if (this.token || n == 3) {
                 this.SET_NAV_MENU_STATE(n)
             }
         },
+        __emailShow() {
+            this.SET_MAIL_STATE()
+        },
         __jump(w) {
+            if (this.mailState) {
+                this.SET_MAIL_STATE()
+            }
             if (!this.token && w != '/login') return
+
+            //首页按钮点击刷新动态
+            if (w == '/home') {
+                this.$bus.emit('refreshfeed')
+            }
             this.$router.push(w)
         },
         __isLogined() {
             if (!this.token) this.__jump('/login')
         },
-        __goAddress() {
-            var obj = {
-                title: this.$t('nav.newTab'),
-                url: this.address
+
+        //是否输入了http头
+        __hasPrefix(str) {
+            if (!str.includes('https://') && !str.includes('http://')) {
+                str = 'http://' + str
             }
-            this.ADD_TABS(obj)
-            this.address = ''
+            return str
+        },
+        __goAddress() {
+            let address = this.__hasPrefix(this.address)
+
+            if (this.tabIdx !== -1) {
+                console.log(this.tabIdx, 'address')
+                let o = {
+                    index: this.tabIdx,
+                    key: 'url',
+                    value: address
+                }
+                this.SET_TAB_ATTR(o)
+            } else {
+                var obj = {
+                    isShow: true,
+                    title: this.$t('nav.newTab'),
+                    url: address
+                }
+                this.ADD_TABS(obj)
+            }
+        },
+        async __addCollect() {
+            let address = this.__hasPrefix(this.address)
+            let req = {
+                collectionVOList: [
+                    {
+                        link: address
+                    }
+                ],
+                userId: this.userInfo.userId,
+                type: 1
+            }
+
+            const res = await this.api.snsCollectSave(req)
+            if (res.code === 0) {
+                this.__getCollecUrl()
+            }
+        },
+        async __delCollect() {
+            let id = this.urlCollectionId
+
+            const res = await this.api.snsCollectionDelete({
+                ids: [id]
+            })
+            if (res.code === 0) {
+                this.__getCollecUrl()
+            }
+        },
+        async __getCollecUrl(currentPage = 1, pageSize = 1000) {
+            let req = {
+                currentPage,
+                pageSize,
+                type: 1,
+                userId: this.userInfo.userId
+            }
+
+            const res = await this.api.snsCollectionList(req)
+            if (res.code === 0) {
+                this.urls = res.data.list
+            }
         }
     },
     created() {
         this.__isLogined()
+        this.__getCollecUrl()
         this.SET_BADGE_COUNT()
     }
 }
@@ -234,22 +377,39 @@ export default {
         .back:hover {
             background-image: url('./img/head_go_slide_pressed@3x.png');
         }
-
         .forward:hover {
             background-image: url('./img/head_back_slide_pressed@3x.png');
         }
-
         .reload:hover {
             background-image: url('./img/head_refresh_slide_pressed@3x.png');
         }
     }
 
     .address {
+        position: relative;
         margin-left: 22px;
         flex-grow: 1;
         input {
             height: 30px;
             width: 100%;
+            font-size: 14px;
+            padding: 0 10px;
+        }
+        .iconr {
+            position: absolute;
+            right: 4px;
+            top: 2px;
+            width: 26px;
+            height: 26px;
+            margin-left: 22px;
+            background-size: 100% 100%;
+            cursor: pointer;
+        }
+        .collect {
+            background-image: url('./img/head_collect_unpressed@3x.png');
+        }
+        .collect.active {
+            background-image: url('./img/head_collect_slide@3x.png');
         }
     }
     .menu {
@@ -273,12 +433,16 @@ export default {
             align-items: center;
         }
         .avatar {
-            background: #000;
             border-radius: 50%;
             overflow: hidden;
-            > img {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #eff0f0;
+            img {
                 width: 100%;
                 height: 100%;
+                object-fit: cover;
             }
         }
         .name {
@@ -289,13 +453,6 @@ export default {
         }
         .home.active {
             background-image: url('./img/home_pressed@3x.png');
-        }
-
-        .collect {
-            background-image: url('./img/head_collect_unpressed@3x.png');
-        }
-        .collect.active {
-            background-image: url('./img/head_collect_unpressed@3x.png');
         }
         .friends {
             background-image: url('./img/head_friend_unpressed@3x.png');
@@ -308,6 +465,12 @@ export default {
         }
         .cloud.active {
             background-image: url('./img/head_cloud_pressed@3x.png');
+        }
+        .email {
+            background-image: url('./img/head_email@3x.png');
+        }
+        .email.active {
+            background-image: url('./img/head_email_pressed@3x.png');
         }
         .wallet {
             background-image: url('./img/head_money_unpressed@3x.png');

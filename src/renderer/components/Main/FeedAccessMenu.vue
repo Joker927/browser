@@ -1,10 +1,11 @@
 <template>
     <div class="accessMenu"
          v-show="accessMenuState"
-         :style="{top:accessMenuStyle.top +'px',left:accessMenuStyle.left+'px'}">
+         :style="{top:accessMenuStyle.top +'px',left:accessMenuStyle.left+'px',zIndex:zIndex}">
         <p>{{$t('main.access')}}</p>
         <ul>
-            <li @click="__selectOption(5)">
+            <li @click="__selectOption(5)"
+                v-if="dynamicItem.permission!==5&&dynamicItem.parentPermission!==5">
                 <div class="title">
                     <span class="icon"></span>
                     <p>{{$t('main.works')}}</p>
@@ -71,10 +72,13 @@ export default {
 
     computed: {
         ...mapState({
+            userInfo: state => state.UserInfo.userInfo,
             permission: state => state.Feed.accessMenuPermission,
             accessMenuStyle: state => state.Feed.accessMenuStyle,
             accessMenuState: state => state.Feed.accessMenuState,
-            selectedList: state => state.Feed.selected
+            selectedList: state => state.Feed.selected,
+            dynamicItem: state => state.Feed.dynamicItem,
+            zIndex: state => state.Feed.zIndex
         })
     },
     methods: {
@@ -85,12 +89,17 @@ export default {
         ]),
 
         __selectOption(type) {
-            this.SET_FEED_ACCESS_PERMISSION(type)
             switch (type) {
                 case 0:
                 case 2:
-                case 5:
                     this.SET_FEED_MODAL_SELECTED([])
+                    break
+                case 5:
+                    if (this.userInfo.setPriceFlag === '0') {
+                        this.$Toast(this.$t('main.setPriceFlag'))
+                    }
+                    this.SET_FEED_MODAL_SELECTED([])
+                    return
                     break
                 case 3:
                     this.SET_FEED_MODAL_STATE({
@@ -105,9 +114,11 @@ export default {
                     })
                     break
             }
+            this.SET_FEED_ACCESS_PERMISSION(type)
         }
     },
-    watch: {}
+    watch: {},
+    created() {}
 }
 </script>
 

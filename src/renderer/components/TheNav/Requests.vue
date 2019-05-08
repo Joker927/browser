@@ -16,8 +16,9 @@
                 :key="index">
                 <div class="NAV_MENU"
                      @click="__jump('user',item.userId)">
-                    <div class="img"><img :src="item.avatar"
-                             alt=""></div>
+                    <div class="img">
+                        <Avatar :src="item.avatar" />
+                    </div>
                     <span class="name">{{item.nickname}}</span>
                 </div>
                 <ButtonFirend :item='item'></ButtonFirend>
@@ -31,9 +32,11 @@
                 v-for="(item,index) in list"
                 :key="index">
                 <div class="NAV_MENU">
-                    <div class="img NAV_MENU"><img class="NAV_MENU"
-                             :src="item.image"
-                             alt=""></div>
+                    <div class="img NAV_MENU">
+
+                        <Avatar class="NAV_MENU"
+                                :src="item.image" />
+                    </div>
                     <span class="name NAV_MENU">{{item.groupName}}</span>
                 </div>
                 <ButtonGroup :item='item'
@@ -47,7 +50,7 @@
         <div class="bottomBtn NAV_MENU">
             <router-link tag="span"
                          class="more cp"
-                         :to="{name:'requests',params:{type:type}}">全部</router-link>
+                         :to="{name:'requests',params:{type:type}}">{{$t('nav.all')}}</router-link>
         </div>
     </div>
 </template>
@@ -64,15 +67,17 @@ export default {
                 userId: null
             },
             type: 0,
-            list: [],
-            titleList: this.$t('nav.titleList')
+            list: []
         }
     },
     components: { ButtonGroup, ButtonFirend },
     computed: {
         ...mapState({
             userInfo: state => state.UserInfo.userInfo
-        })
+        }),
+        titleList() {
+            return this.$t('nav.titleList')
+        }
     },
     methods: {
         __jump(w, q) {
@@ -148,12 +153,14 @@ export default {
             height: 32px;
             border-radius: 50%;
             overflow: hidden;
-            background: #000;
             margin-right: 10px;
             img {
                 max-width: 100%;
                 max-height: 100%;
                 /* background: #000; */
+                object-fit: cover;
+                width: 32px;
+                height: 32px;
             }
         }
         > li {
