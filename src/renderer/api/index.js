@@ -1,13 +1,34 @@
 import http from './http'
+import store from '@/store'
+const defaultHost = 'http://139.196.98.22:8081/angel/'
 
-//
+let walletHost =
+    JSON.parse(localStorage.getItem('WALLETHOST')) ||
+    'http://101.132.177.123:3000/'
+
+let baseURL = () => {
+    let host = store.state.UserInfo.nodes.host
+    if (host) {
+        host = host + 'angel/'
+    }
+    return host || defaultHost
+}
+
+//获取结点信息
+export const getNodes = () => {
+    const req = {
+        url: defaultHost + 'api/common/getNodes'
+    }
+    return http.post(req)
+}
+
 export const areaCode = () => {
     const req = {
         // contentType: 'application/x-www-form-urlencoded',
         data: {
             type: 'areaCode'
         },
-        url: 'api/dict/areacode'
+        url: baseURL() + 'api/dict/areacode'
     }
     return http.post(req)
 }
@@ -20,7 +41,7 @@ export const regCode = data => {
             acceptNo,
             flag
         },
-        url: 'api/code/sendregcode'
+        url: baseURL() + 'api/code/sendregcode'
     }
     return http.post(req)
 }
@@ -29,7 +50,7 @@ export const regCode = data => {
 export const register = data => {
     const req = {
         data,
-        url: 'pc/api/user/register'
+        url: baseURL() + 'pc/api/user/register'
     }
     return http.post(req)
 }
@@ -37,7 +58,7 @@ export const register = data => {
 export const login = data => {
     const req = {
         data,
-        url: 'pc/api/user/login'
+        url: baseURL() + 'pc/api/user/login'
     }
     return http.post(req)
 }
@@ -46,7 +67,7 @@ export const login = data => {
 export const loginOut = data => {
     const req = {
         data,
-        url: 'api/im/loginOut'
+        url: baseURL() + 'api/im/loginOut'
     }
     return http.post(req)
 }
@@ -55,7 +76,25 @@ export const loginOut = data => {
 export const userInfo = data => {
     const req = {
         data,
-        url: 'pc/api/user/info'
+        url: baseURL() + 'pc/api/user/info'
+    }
+    return http.post(req)
+}
+
+//批量邀请加群
+export const addGroupMembers = data => {
+    const req = {
+        data,
+        url: baseURL() + 'pc/api/group/addgroupmembers'
+    }
+    return http.post(req)
+}
+
+//移除成员
+export const deleteMember = data => {
+    const req = {
+        data,
+        url: baseURL() + 'pc/api/group/removegroupmembers'
     }
     return http.post(req)
 }
@@ -64,7 +103,7 @@ export const userInfo = data => {
 export const updateUserInfo = data => {
     const req = {
         data,
-        url: 'pc/api/user/updateuserinfo'
+        url: baseURL() + 'pc/api/user/updateuserinfo'
     }
     return http.post(req)
 }
@@ -72,15 +111,34 @@ export const updateUserInfo = data => {
 export const forgetPwd = data => {
     const req = {
         data,
-        url: 'pc/api/user/forgetpwd'
+        url: baseURL() + 'pc/api/user/forgetpwd'
     }
     return http.post(req)
 }
+
+//校验验证码
+export const checkCode = data => {
+    const req = {
+        data,
+        url: baseURL() + 'api/code/checkCode'
+    }
+    return http.post(req)
+}
+
+//发送验证码
+export const sendkCode = data => {
+    const req = {
+        data,
+        url: baseURL() + 'api/code/sendCode'
+    }
+    return http.post(req)
+}
+
 //上传头像
 export const userUploadAvater = data => {
     const req = {
         data,
-        url: 'pc/api/user/uploadAvater'
+        url: baseURL() + 'pc/api/user/uploadAvater'
     }
     return http.form(req)
 }
@@ -89,7 +147,7 @@ export const userUploadAvater = data => {
 export const userUploadPwd = data => {
     const req = {
         data,
-        url: 'pc/api/user/updatepwd'
+        url: baseURL() + 'pc/api/user/updatepwd'
     }
     return http.post(req)
 }
@@ -97,7 +155,7 @@ export const userUploadPwd = data => {
 export const groupCreateAndAddMember = data => {
     const req = {
         data,
-        url: 'pc/api/group/createAndAddMember'
+        url: baseURL() + 'pc/api/group/createAndAddMember'
     }
     return http.post(req)
 }
@@ -107,7 +165,7 @@ export const groupDelete = ids => {
         data: {
             ids: ids
         },
-        url: 'pc/api/group/delete'
+        url: baseURL() + 'pc/api/group/delete'
     }
     return http.post(req)
 }
@@ -117,16 +175,35 @@ export const groupInfo = id => {
         data: {
             id: id
         },
-        url: 'pc/api/group/info'
+        url: baseURL() + 'pc/api/group/info'
     }
     return http.post(req)
 }
+
+//解散群组
+export const dissolveGroup = data => {
+    const req = {
+        data,
+        url: baseURL() + 'pc/api/group/ungroup'
+    }
+    return http.post(req)
+}
+
+//退出群组
+export const exitGroup = data => {
+    const req = {
+        data,
+        url: baseURL() + 'pc/api/group/quitgroup'
+    }
+    return http.post(req)
+}
+
 //用户群列表
 
 export const groupList = data => {
     const req = {
         data,
-        url: 'pc/api/group/list'
+        url: baseURL() + 'pc/api/group/list'
     }
     return http.post(req)
 }
@@ -134,7 +211,7 @@ export const groupList = data => {
 //新建群组
 export const groupSave = () => {
     const req = {
-        url: 'pc/api/group/save'
+        url: baseURL() + 'pc/api/group/save'
     }
     return http.post(req)
 }
@@ -143,7 +220,7 @@ export const groupSave = () => {
 export const groupApply = data => {
     const req = {
         data,
-        url: 'pc/api/grouprequest/apply'
+        url: baseURL() + 'pc/api/grouprequest/apply'
     }
     return http.post(req)
 }
@@ -152,7 +229,7 @@ export const groupApply = data => {
 export const groupRefust = data => {
     const req = {
         data,
-        url: 'pc/api/grouprequest/refust'
+        url: baseURL() + 'pc/api/grouprequest/refust'
     }
     return http.post(req)
 }
@@ -161,7 +238,7 @@ export const groupRefust = data => {
 export const groupInvite = data => {
     const req = {
         data,
-        url: 'pc/api/grouprequest/invitelist'
+        url: baseURL() + 'pc/api/grouprequest/invitelist'
     }
     return http.post(req)
 }
@@ -169,14 +246,15 @@ export const groupInvite = data => {
 export const groupAgree = data => {
     const req = {
         data,
-        url: 'pc/api/grouprequest/agree'
+        url: baseURL() + 'pc/api/grouprequest/agree'
     }
     return http.post(req)
 }
 //更新群组信息
-export const groupUpdate = () => {
+export const groupUpdate = data => {
     const req = {
-        url: 'pc/api/group/update'
+        data,
+        url: baseURL() + 'pc/api/group/update'
     }
     return http.post(req)
 }
@@ -184,7 +262,7 @@ export const groupUpdate = () => {
 //加群申请请列表
 export const groupRequestList = () => {
     const req = {
-        url: 'pc/api/grouprequest/list'
+        url: baseURL() + 'pc/api/grouprequest/list'
     }
     return http.post(req)
 }
@@ -192,7 +270,7 @@ export const groupRequestList = () => {
 export const groupUploadImage = data => {
     const req = {
         data,
-        url: 'pc/api/group/uploadImage'
+        url: baseURL() + 'pc/api/group/uploadImage'
     }
     return http.form(req)
 }
@@ -200,7 +278,7 @@ export const groupUploadImage = data => {
 export const searchFriend = data => {
     const req = {
         data,
-        url: 'pc/api/userfriend/searchFriend'
+        url: baseURL() + 'pc/api/userfriend/searchFriend'
     }
     return http.post(req)
 }
@@ -212,7 +290,7 @@ export const searchAll = data => {
         data: {
             searchName
         },
-        url: 'pc/api/search/searchuserandgroup'
+        url: baseURL() + 'pc/api/search/searchuserandgroup'
     }
     return http.post(req)
 }
@@ -224,7 +302,7 @@ export const searchFriendOrGroup = data => {
         data: {
             searchName
         },
-        url: 'pc/api/search/searchfriendandgroup'
+        url: baseURL() + 'pc/api/search/searchfriendandgroup'
     }
     return http.post(req)
 }
@@ -233,7 +311,7 @@ export const searchFriendOrGroup = data => {
 export const recommendGroup = data => {
     const req = {
         data,
-        url: 'pc/api/group/recommendgroup'
+        url: baseURL() + 'pc/api/group/recommendgroup'
     }
     return http.post(req)
 }
@@ -242,14 +320,14 @@ export const recommendGroup = data => {
 export const recommendFriendes = data => {
     const req = {
         data,
-        url: 'pc/api/userfriend/recommendfriend'
+        url: baseURL() + 'pc/api/userfriend/recommendfriend'
     }
     return http.post(req)
 }
 export const friendsListData = data => {
     const req = {
         data,
-        url: 'pc/api/userfriend/listdata'
+        url: baseURL() + 'pc/api/userfriend/listdata'
     }
     return http.post(req)
 }
@@ -257,7 +335,7 @@ export const friendsListData = data => {
 export const friendsList = data => {
     const req = {
         data,
-        url: 'pc/api/userfriend/list'
+        url: baseURL() + 'pc/api/userfriend/list'
     }
     return http.post(req)
 }
@@ -266,7 +344,7 @@ export const friendsList = data => {
 export const friendeAdd = data => {
     const req = {
         data,
-        url: 'pc/api/userfriend/add'
+        url: baseURL() + 'pc/api/userfriend/add'
     }
     return http.post(req)
 }
@@ -275,7 +353,7 @@ export const friendeAdd = data => {
 export const friendDelete = data => {
     const req = {
         data,
-        url: 'pc/api/userfriend/delete'
+        url: baseURL() + 'pc/api/userfriend/delete'
     }
     return http.post(req)
 }
@@ -286,7 +364,7 @@ export const friendInfo = data => {
         data: {
             id
         },
-        url: 'pc/api/userfriend/info'
+        url: baseURL() + 'pc/api/userfriend/info'
     }
     return http.post(req)
 }
@@ -298,7 +376,7 @@ export const friendApply = data => {
         data: {
             requesterId
         },
-        url: 'pc/api/friendrequest/apply'
+        url: baseURL() + 'pc/api/friendrequest/apply'
     }
     return http.post(req)
 }
@@ -309,7 +387,7 @@ export const friendeReject = data => {
         data: {
             requesterId
         },
-        url: 'pc/api/friendrequest/refust'
+        url: baseURL() + 'pc/api/friendrequest/refust'
     }
     return http.post(req)
 }
@@ -321,7 +399,7 @@ export const friendRequestList = data => {
         data: {
             userId
         },
-        url: 'pc/api/friendrequest/list'
+        url: baseURL() + 'pc/api/friendrequest/list'
     }
     return http.post(req)
 }
@@ -330,14 +408,14 @@ export const friendRequestList = data => {
 export const emailList = data => {
     const req = {
         data,
-        url: 'email/emailsendacceptrecord/list'
+        url: baseURL() + 'email/emailsendacceptrecord/list'
     }
     return http.post(req)
 }
 //我的好友用户信息列表
 export const emailFriendlist = id => {
     const req = {
-        url: 'email/emailbwcommon/friendlist?userId=' + id
+        url: baseURL() + 'email/emailbwcommon/friendlist?userId=' + id
     }
     return http.post(req)
 }
@@ -346,21 +424,21 @@ export const emailFriendlist = id => {
 export const emailOperatebatch = data => {
     const req = {
         data,
-        url: 'email/emailbwcommon/pc/operatebatch'
+        url: baseURL() + 'email/emailbwcommon/pc/operatebatch'
     }
     return http.post(req)
 }
 //我最近的发件人
 export const emailRecentuserlist = id => {
     const req = {
-        url: 'email/emailbwcommon/recentuserlist?userId=' + id
+        url: baseURL() + 'email/emailbwcommon/recentuserlist?userId=' + id
     }
     return http.post(req)
 }
 //邮件用户白名单列表
 export const emailWhitelist = id => {
     const req = {
-        url: 'email/emailwhitelist/list?userId=' + id
+        url: baseURL() + 'email/emailwhitelist/list?userId=' + id
     }
     return http.post(req)
 }
@@ -368,7 +446,7 @@ export const emailWhitelist = id => {
 //邮件用户黑名单列表
 export const emailBlacklist = id => {
     const req = {
-        url: 'email/emailblacklist/list?userId=' + id
+        url: baseURL() + 'email/emailblacklist/list?userId=' + id
     }
     return http.post(req)
 }
@@ -376,14 +454,14 @@ export const emailBlacklist = id => {
 export const emailOperate = data => {
     const req = {
         data,
-        url: 'email/emailsendacceptrecord/operate'
+        url: baseURL() + 'email/emailsendacceptrecord/operate'
     }
     return http.post(req)
 }
 //邮件详情
 export const emailDetails = data => {
     const req = {
-        url: 'email/emailsendacceptrecord/info/',
+        url: baseURL() + 'email/emailsendacceptrecord/info/',
         data
     }
     return http.post(req)
@@ -393,7 +471,7 @@ export const emailUpload = (data, cb, id) => {
     const req = {
         data,
         cb,
-        url: 'email/emailattachments/uploadAttachment'
+        url: baseURL() + 'email/emailattachments/uploadAttachment'
     }
     return http.form(req)
 }
@@ -401,7 +479,7 @@ export const emailUpload = (data, cb, id) => {
 export const emailSend = data => {
     const req = {
         data,
-        url: 'email/emailsendacceptrecord/savebatch'
+        url: baseURL() + 'email/emailsendacceptrecord/savebatch'
     }
     return http.post(req)
 }
@@ -410,7 +488,7 @@ export const emailUnreadnum = data => {
     const req = {
         data,
 
-        url: 'email/emailsendacceptrecord/unreadnum'
+        url: baseURL() + 'email/emailsendacceptrecord/unreadnum'
     }
     return http.post(req)
 }
@@ -419,7 +497,16 @@ export const emailUnreadnum = data => {
 export const emailFuzzyUser = data => {
     const req = {
         data,
-        url: 'email/emailsendacceptrecord/fuzzyuser'
+        url: baseURL() + 'email/emailsendacceptrecord/fuzzyuser'
+    }
+    return http.post(req)
+}
+
+//修改邮件云端路径
+export const emailUpdateCloudPath = data => {
+    const req = {
+        data,
+        url: baseURL() + 'email/emailsendacceptrecord/updateCloudPath'
     }
     return http.post(req)
 }
@@ -428,7 +515,7 @@ export const emailFuzzyUser = data => {
 export const sendMessage = data => {
     const req = {
         data,
-        url: 'api/im/sendMessage'
+        url: baseURL() + 'api/im/sendMessage'
     }
     return http.post(req)
 }
@@ -439,7 +526,7 @@ export const getMessage = id => {
         data: {
             id: id
         },
-        url: 'api/im/getMessage'
+        url: baseURL() + 'api/im/getMessage'
     }
     return http.post(req)
 }
@@ -448,7 +535,7 @@ export const getMessage = id => {
 export const sendImgMessage = data => {
     const req = {
         data,
-        url: 'api/im/sendImageMessage'
+        url: baseURL() + 'api/im/sendImageMessage'
     }
     return http.form(req)
 }
@@ -457,7 +544,7 @@ export const sendImgMessage = data => {
 export const sendGroupMessage = data => {
     const req = {
         data,
-        url: 'api/groupim/sendMessage'
+        url: baseURL() + 'api/groupim/sendMessage'
     }
     return http.post(req)
 }
@@ -468,7 +555,7 @@ export const getGroupMessage = id => {
         data: {
             id: id
         },
-        url: 'api/groupim/getMessage'
+        url: baseURL() + 'api/groupim/getMessage'
     }
     return http.post(req)
 }
@@ -477,7 +564,7 @@ export const getGroupMessage = id => {
 export const startListener = data => {
     const req = {
         data,
-        url: 'api/groupim/startlistener'
+        url: baseURL() + 'api/groupim/startlistener'
     }
     return http.post(req)
 }
@@ -486,7 +573,7 @@ export const startListener = data => {
 export const sendGroupImgMessage = data => {
     const req = {
         data,
-        url: 'api/groupim/sendImageMessage'
+        url: baseURL() + 'api/groupim/sendImageMessage'
     }
     return http.form(req)
 }
@@ -495,7 +582,7 @@ export const sendGroupImgMessage = data => {
 export const getAddressBySeed = data => {
     const req = {
         data,
-        url: 'http://101.132.177.123:3000/api/getAddressList'
+        url: walletHost + 'api/getAddressList'
     }
     return http.post(req)
 }
@@ -503,7 +590,7 @@ export const getAddressBySeed = data => {
 //获取币种列表
 export const getCuurrercyList = data => {
     const req = {
-        url: 'http://101.132.177.123:3000/api/getContractList'
+        url: walletHost + 'api/getContractList'
     }
     return http.get(req)
 }
@@ -512,7 +599,7 @@ export const getCuurrercyList = data => {
 export const transferToSeedAddress = data => {
     const req = {
         data,
-        url: 'http://101.132.177.123:3000/api/sendTransfer'
+        url: walletHost + 'api/sendTransfer'
     }
     return http.post(req)
 }
@@ -520,7 +607,7 @@ export const transferToSeedAddress = data => {
 //seed获取可充值币种列表
 export const getCanRechargeCurrencyList = data => {
     const req = {
-        url: 'http://101.132.177.123:3000/api/getChargeCurrencyList'
+        url: walletHost + 'api/getChargeCurrencyList'
     }
     return http.get(req)
 }
@@ -528,7 +615,7 @@ export const getCanRechargeCurrencyList = data => {
 //获取币种汇率
 export const getExchangeRate = data => {
     const req = {
-        url: 'http://101.132.177.123:3000/api/getExchangeRate'
+        url: walletHost + 'api/getExchangeRate'
     }
     return http.get(req)
 }
@@ -537,7 +624,7 @@ export const getExchangeRate = data => {
 export const seedRecharge = data => {
     const req = {
         data,
-        url: 'http://101.132.177.123:3000/api/recharge'
+        url: walletHost + 'api/recharge'
     }
     return http.post(req)
 }
@@ -546,7 +633,7 @@ export const seedRecharge = data => {
 export const seedGetRechargeRecord = data => {
     const req = {
         data,
-        url: 'http://101.132.177.123:3000/api/getRechargeList'
+        url: walletHost + 'api/getRechargeList'
     }
     return http.post(req)
 }
@@ -560,11 +647,20 @@ export const seedGetRechargeRate = data => {
     return http.post(req)
 }
 
+//seed获取充值汇率
+export const seedGetRechargeRate2 = data => {
+    const req = {
+        data,
+        url: walletHost + 'api/getRealTimeExchangeRate'
+    }
+    return http.post(req)
+}
+
 //seed获取充值记录
 export const seedGetTransferList = data => {
     const req = {
         data,
-        url: 'http://101.132.177.123:3000/api/getTransactionList'
+        url: walletHost + 'api/getTransactionList'
     }
     return http.post(req)
 }
@@ -573,7 +669,7 @@ export const seedGetTransferList = data => {
 export const getGIMCurrentySum = data => {
     const req = {
         data,
-        url: 'http://101.132.177.123:3000/api/getGimBalance'
+        url: walletHost + 'api/getGimBalance'
     }
     return http.post(req)
 }
@@ -582,7 +678,7 @@ export const getGIMCurrentySum = data => {
 export const getMuchCurrentySum = data => {
     const req = {
         data,
-        url: 'http://101.132.177.123:3000/api/getCurrencyBalance'
+        url: walletHost + 'api/getCurrencyBalance'
     }
     return http.post(req)
 }
@@ -591,7 +687,7 @@ export const getMuchCurrentySum = data => {
 export const snsIndexlist = data => {
     const req = {
         data,
-        url: 'api/sns/dynamic/indexlist'
+        url: baseURL() + 'api/sns/dynamic/indexlist'
     }
     return http.post(req)
 }
@@ -600,7 +696,7 @@ export const snsIndexlist = data => {
 export const snsList = data => {
     const req = {
         data,
-        url: 'api/sns/dynamic/list'
+        url: baseURL() + 'api/sns/dynamic/list'
     }
     return http.post(req)
 }
@@ -608,7 +704,7 @@ export const snsList = data => {
 export const snsUpdatePhotoWall = data => {
     const req = {
         data,
-        url: 'api/sns/dynamic/updatePhotoWall'
+        url: baseURL() + 'api/sns/dynamic/updatePhotoWall'
     }
     return http.form(req)
 }
@@ -617,7 +713,7 @@ export const snsUpdatePhotoWall = data => {
 export const snsGetUserPhotoWall = data => {
     const req = {
         data,
-        url: 'api/sns/dynamic/getUserPhotoWall'
+        url: baseURL() + 'api/sns/dynamic/getUserPhotoWall'
     }
     return http.post(req)
 }
@@ -626,7 +722,7 @@ export const snsGetUserPhotoWall = data => {
 export const snsGetPhotoWall = data => {
     const req = {
         data,
-        url: 'api/sns/dynamic/getPhotoWall'
+        url: baseURL() + 'api/sns/dynamic/getPhotoWall'
     }
     return http.post(req)
 }
@@ -634,7 +730,7 @@ export const snsGetPhotoWall = data => {
 export const snsPublish = data => {
     const req = {
         data,
-        url: 'api/sns/dynamic/publish'
+        url: baseURL() + 'api/sns/dynamic/publish'
     }
     return http.post(req)
 }
@@ -643,7 +739,7 @@ export const snsPublish = data => {
 export const snsLike = data => {
     const req = {
         data,
-        url: 'api/sns/dyanmiclike/save'
+        url: baseURL() + 'api/sns/dyanmiclike/save'
     }
     return http.post(req)
 }
@@ -652,7 +748,7 @@ export const snsLike = data => {
 export const ucRewardConfig = data => {
     const req = {
         data,
-        url: 'api/uc/rewardconfig/config'
+        url: baseURL() + 'api/uc/rewardconfig/config'
     }
     return http.post(req)
 }
@@ -661,7 +757,7 @@ export const ucRewardConfig = data => {
 export const snsRewardIns = data => {
     const req = {
         data,
-        url: 'api/sns/dynamicreward/reward'
+        url: baseURL() + 'api/sns/dynamicreward/reward'
     }
     return http.post(req)
 }
@@ -672,7 +768,7 @@ export const ucGetRewardInfo = id => {
         data: {
             id: id
         },
-        url: 'api/uc/rewardconfig/info'
+        url: baseURL() + 'api/uc/rewardconfig/info'
     }
     return http.post(req)
 }
@@ -681,7 +777,7 @@ export const ucGetRewardInfo = id => {
 export const snsCancelLike = data => {
     const req = {
         data,
-        url: 'api/sns/dyanmiclike/cancel'
+        url: baseURL() + 'api/sns/dyanmiclike/cancel'
     }
     return http.post(req)
 }
@@ -690,7 +786,7 @@ export const snsCancelLike = data => {
 export const snsDynamicDetail = data => {
     const req = {
         data,
-        url: 'api/sns/dynamic/detail'
+        url: baseURL() + 'api/sns/dynamic/detail'
     }
     return http.post(req)
 }
@@ -698,7 +794,7 @@ export const snsDynamicDetail = data => {
 export const snsLikeList = data => {
     const req = {
         data,
-        url: 'api/sns/dyanmiclike/list'
+        url: baseURL() + 'api/sns/dyanmiclike/list'
     }
     return http.post(req)
 }
@@ -707,7 +803,7 @@ export const snsLikeList = data => {
 export const snsComment = data => {
     const req = {
         data,
-        url: 'api/sns/dynamiccomment/publish'
+        url: baseURL() + 'api/sns/dynamiccomment/publish'
     }
     return http.post(req)
 }
@@ -716,7 +812,7 @@ export const snsComment = data => {
 export const snsCommentList = data => {
     const req = {
         data,
-        url: 'api/sns/dynamiccomment/list'
+        url: baseURL() + 'api/sns/dynamiccomment/list'
     }
     return http.post(req)
 }
@@ -726,7 +822,7 @@ export const snsUpload = (data, cb) => {
     const req = {
         data,
         cb,
-        url: 'api/sns/dynamic/uploadImgOrVideo'
+        url: baseURL() + 'api/sns/dynamic/uploadImgOrVideo'
     }
     return http.form(req)
 }
@@ -736,7 +832,7 @@ export const snsUpload = (data, cb) => {
 export const snsDelComment = data => {
     const req = {
         data,
-        url: 'api/sns/dynamiccomment/delete'
+        url: baseURL() + 'api/sns/dynamiccomment/delete'
     }
     return http.post(req)
 }
@@ -745,7 +841,7 @@ export const snsDelComment = data => {
 export const snsReply = data => {
     const req = {
         data,
-        url: 'api/commentreply/reply'
+        url: baseURL() + 'api/commentreply/reply'
     }
     return http.post(req)
 }
@@ -754,7 +850,7 @@ export const snsReply = data => {
 export const snsDeleteReply = data => {
     const req = {
         data,
-        url: 'api/commentreply/delete'
+        url: baseURL() + 'api/commentreply/delete'
     }
     return http.post(req)
 }
@@ -763,7 +859,7 @@ export const snsDeleteReply = data => {
 export const snsReplyList = data => {
     const req = {
         data,
-        url: 'api/commentreply/list'
+        url: baseURL() + 'api/commentreply/list'
     }
     return http.post(req)
 }
@@ -772,7 +868,7 @@ export const snsReplyList = data => {
 export const snsDelete = data => {
     const req = {
         data,
-        url: 'api/sns/dynamic/delete'
+        url: baseURL() + 'api/sns/dynamic/delete'
     }
     return http.post(req)
 }
@@ -781,7 +877,7 @@ export const snsDelete = data => {
 export const snsInfromlist = data => {
     const req = {
         data,
-        url: 'api/sns/dynamic/infromlist'
+        url: baseURL() + 'api/sns/dynamic/infromlist'
     }
     return http.post(req)
 }
@@ -790,7 +886,7 @@ export const snsInfromlist = data => {
 export const snsRead = data => {
     const req = {
         data,
-        url: 'api/sns/dynamic/read'
+        url: baseURL() + 'api/sns/dynamic/read'
     }
     return http.post(req)
 }
@@ -798,7 +894,7 @@ export const snsRead = data => {
 export const snsCollectSave = data => {
     const req = {
         data,
-        url: 'api/usercollection/save'
+        url: baseURL() + 'api/usercollection/save'
     }
     return http.post(req)
 }
@@ -807,7 +903,7 @@ export const snsCollectSave = data => {
 export const snsCollectionList = data => {
     const req = {
         data,
-        url: 'api/usercollection/list'
+        url: baseURL() + 'api/usercollection/list'
     }
     return http.post(req)
 }
@@ -815,7 +911,7 @@ export const snsCollectionList = data => {
 export const snsCollectionDelete = data => {
     const req = {
         data,
-        url: 'api/usercollection/delete'
+        url: baseURL() + 'api/usercollection/delete'
     }
     return http.post(req)
 }
@@ -823,7 +919,7 @@ export const snsCollectionDelete = data => {
 export const snsCollectionUpload = data => {
     const req = {
         data,
-        url: 'api/usercollection/upload'
+        url: baseURL() + 'api/usercollection/upload'
     }
     return http.post(req)
 }
@@ -832,7 +928,7 @@ export const snsCollectionUpload = data => {
 export const snsCollectionSingleSave = data => {
     const req = {
         data,
-        url: 'api/usercollection/singlesave'
+        url: baseURL() + 'api/usercollection/singlesave'
     }
     return http.post(req)
 }
@@ -842,7 +938,7 @@ export const snsCollectionSingleSave = data => {
 export const searchUserAndGroup = data => {
     const req = {
         data,
-        url: 'pc/api/search/searchuserandgroup'
+        url: baseURL() + 'pc/api/search/searchuserandgroup'
     }
     return http.post(req)
 }
@@ -851,7 +947,7 @@ export const searchUserAndGroup = data => {
 export const searchFriendAndGroup = data => {
     const req = {
         data,
-        url: 'pc/api/search/searchfriendandgroup'
+        url: baseURL() + 'pc/api/search/searchfriendandgroup'
     }
     return http.post(req)
 }
@@ -860,7 +956,7 @@ export const searchFriendAndGroup = data => {
 export const searchUserAndDynamic = data => {
     const req = {
         data,
-        url: 'pc/api/search/searauseranddynamic'
+        url: baseURL() + 'pc/api/search/searauseranddynamic'
     }
     return http.post(req)
 }
@@ -869,7 +965,7 @@ export const searchUserAndDynamic = data => {
 export const searchUser = data => {
     const req = {
         data,
-        url: 'pc/api/search/searalluser'
+        url: baseURL() + 'pc/api/search/searalluser'
     }
     return http.post(req)
 }
@@ -878,7 +974,7 @@ export const searchUser = data => {
 export const searchDynamic = data => {
     const req = {
         data,
-        url: 'pc/api/search/seardynamic'
+        url: baseURL() + 'pc/api/search/seardynamic'
     }
     return http.post(req)
 }
@@ -887,7 +983,7 @@ export const searchDynamic = data => {
 export const privacyDynamicviewList = data => {
     const req = {
         data,
-        url: 'api/uc/privacy/dynamicviewlist'
+        url: baseURL() + 'api/uc/privacy/dynamicviewlist'
     }
     return http.post(req)
 }
@@ -895,7 +991,7 @@ export const privacyDynamicviewList = data => {
 export const privacyRemoveDynamicView = data => {
     const req = {
         data,
-        url: 'api/uc/privacy/removedynamicview'
+        url: baseURL() + 'api/uc/privacy/removedynamicview'
     }
     return http.post(req)
 }
@@ -904,7 +1000,7 @@ export const privacyRemoveDynamicView = data => {
 export const privacySetDynamicView = data => {
     const req = {
         data,
-        url: 'api/uc/privacy/setdynamicview'
+        url: baseURL() + 'api/uc/privacy/setdynamicview'
     }
     return http.post(req)
 }
@@ -914,7 +1010,7 @@ export const privacySetDynamicView = data => {
 export const privacySetVerify = data => {
     const req = {
         data,
-        url: 'api/uc/privacy/setisverify'
+        url: baseURL() + 'api/uc/privacy/setisverify'
     }
     return http.post(req)
 }
@@ -923,7 +1019,16 @@ export const privacySetVerify = data => {
 export const privacySetViewDynamicRange = data => {
     const req = {
         data,
-        url: 'api/uc/privacy/setviewdynamicrange'
+        url: baseURL() + 'api/uc/privacy/setviewdynamicrange'
+    }
+    return http.post(req)
+}
+
+//查询新动态条数
+export const newDynamicCount = data => {
+    const req = {
+        data,
+        url: baseURL() + 'api/sns/dynamic/newDynamicCount'
     }
     return http.post(req)
 }
@@ -932,7 +1037,7 @@ export const privacySetViewDynamicRange = data => {
 export const privacyBlacklist = data => {
     const req = {
         data,
-        url: 'api/uc/privacy/blacklist'
+        url: baseURL() + 'api/uc/privacy/blacklist'
     }
     return http.post(req)
 }
@@ -940,7 +1045,7 @@ export const privacyBlacklist = data => {
 export const privacyAddBlacklist = data => {
     const req = {
         data,
-        url: 'api/uc/privacy/addblacklist'
+        url: baseURL() + 'api/uc/privacy/addblacklist'
     }
     return http.post(req)
 }
@@ -949,7 +1054,7 @@ export const privacyAddBlacklist = data => {
 export const privacyRemoveBlacklist = data => {
     const req = {
         data,
-        url: 'api/uc/privacy/removeblacklist'
+        url: baseURL() + 'api/uc/privacy/removeblacklist'
     }
     return http.post(req)
 }
@@ -958,7 +1063,7 @@ export const privacyRemoveBlacklist = data => {
 export const snsDynamicorderCheck = data => {
     const req = {
         data,
-        url: 'api/sns/dynamicorder/check'
+        url: baseURL() + 'api/sns/dynamicorder/check'
     }
     return http.post(req)
 }
@@ -967,7 +1072,7 @@ export const snsDynamicorderCheck = data => {
 export const snsDynamicorderBuy = data => {
     const req = {
         data,
-        url: 'api/sns/dynamicorder/buy'
+        url: baseURL() + 'api/sns/dynamicorder/buy'
     }
     return http.post(req)
 }
@@ -976,7 +1081,7 @@ export const snsDynamicorderBuy = data => {
 export const snsDynamicordRewardList = data => {
     const req = {
         data,
-        url: 'api/sns/dynamicreward/rewardlist'
+        url: baseURL() + 'api/sns/dynamicreward/rewardlist'
     }
     return http.post(req)
 }
@@ -985,7 +1090,7 @@ export const snsDynamicordRewardList = data => {
 export const snsDynamicordList = data => {
     const req = {
         data,
-        url: 'api/sns/dynamicreward/list'
+        url: baseURL() + 'api/sns/dynamicreward/list'
     }
     return http.post(req)
 }
@@ -994,7 +1099,7 @@ export const snsDynamicordList = data => {
 export const snsRedList = data => {
     const req = {
         data,
-        url: 'api/sns/redenvelope/record'
+        url: baseURL() + 'api/sns/redenvelope/record'
     }
     return http.post(req)
 }
@@ -1003,7 +1108,7 @@ export const snsRedList = data => {
 export const snstransferList = data => {
     const req = {
         data,
-        url: 'api/sns/transferaccounts/list'
+        url: baseURL() + 'api/sns/transferaccounts/list'
     }
     return http.post(req)
 }
@@ -1012,7 +1117,7 @@ export const snstransferList = data => {
 export const snsDynamicorderUpdate = data => {
     const req = {
         data,
-        url: 'api/sns/dynamicorder/update'
+        url: baseURL() + 'api/sns/dynamicorder/update'
     }
     return http.post(req)
 }
@@ -1021,7 +1126,7 @@ export const snsDynamicorderUpdate = data => {
 export const sendRed = data => {
     const req = {
         data,
-        url: 'api/sns/redenvelope/send'
+        url: baseURL() + 'api/sns/redenvelope/send'
     }
     return http.post(req)
 }
@@ -1030,7 +1135,7 @@ export const sendRed = data => {
 export const getRed = data => {
     const req = {
         data,
-        url: 'api/sns/redenvelope/receive'
+        url: baseURL() + 'api/sns/redenvelope/receive'
     }
     return http.post(req)
 }
@@ -1039,7 +1144,7 @@ export const getRed = data => {
 export const snsWorkSet = data => {
     const req = {
         data,
-        url: 'api/sns/setprice/saveOrUpdate'
+        url: baseURL() + 'api/sns/setprice/saveOrUpdate'
     }
     return http.post(req)
 }
@@ -1048,7 +1153,7 @@ export const snsWorkSet = data => {
 export const snsWorkInfo = data => {
     const req = {
         data,
-        url: 'api/sns/setprice/info'
+        url: baseURL() + 'api/sns/setprice/info'
     }
     return http.post(req)
 }
@@ -1057,7 +1162,7 @@ export const snsWorkInfo = data => {
 export const cloudInfo = data => {
     const req = {
         data,
-        url: 'api/cloud/info'
+        url: baseURL() + 'api/cloud/info'
     }
     return http.post(req)
 }
@@ -1066,7 +1171,7 @@ export const cloudInfo = data => {
 export const cloudMatchStorage = data => {
     const req = {
         data,
-        url: 'api/cloud/storage/matchStorage'
+        url: baseURL() + 'api/cloud/storage/matchStorage'
     }
     return http.post(req)
 }
@@ -1075,7 +1180,7 @@ export const cloudMatchStorage = data => {
 export const cloudMatchStorageDetail = data => {
     const req = {
         data,
-        url: 'api/cloud/storage/matchStorageDetail'
+        url: baseURL() + 'api/cloud/storage/matchStorageDetail'
     }
     return http.post(req)
 }
@@ -1084,7 +1189,7 @@ export const cloudMatchStorageDetail = data => {
 export const cloudStorageList = data => {
     const req = {
         data,
-        url: 'api/cloud/storage/list'
+        url: baseURL() + 'api/cloud/storage/list'
     }
     return http.post(req)
 }
@@ -1093,7 +1198,7 @@ export const cloudStorageList = data => {
 export const cloudStorageBuy = data => {
     const req = {
         data,
-        url: 'api/cloud/storage/buy'
+        url: baseURL() + 'api/cloud/storage/buy'
     }
     return http.post(req)
 }
@@ -1103,7 +1208,7 @@ export const cloudStorageBuy = data => {
 export const cloudOrderCallback = data => {
     const req = {
         data,
-        url: 'api/cloud/order/pay/callback'
+        url: baseURL() + 'api/cloud/order/pay/callback'
     }
     return http.post(req)
 }
@@ -1112,7 +1217,7 @@ export const cloudOrderCallback = data => {
 export const cloudStorageCreate = data => {
     const req = {
         data,
-        url: 'api/cloud/storage/create'
+        url: baseURL() + 'api/cloud/storage/create'
     }
     return http.post(req)
 }
@@ -1121,7 +1226,7 @@ export const cloudStorageCreate = data => {
 export const cloudGetAllFile = data => {
     const req = {
         data,
-        url: 'api/cloud/file/list'
+        url: baseURL() + 'api/cloud/file/list'
     }
     return http.post(req)
 }
@@ -1130,7 +1235,7 @@ export const cloudGetAllFile = data => {
 export const cloudCreateFolder = data => {
     const req = {
         data,
-        url: 'api/cloud/file/createFolder'
+        url: baseURL() + 'api/cloud/file/createFolder'
     }
     return http.post(req)
 }
@@ -1139,7 +1244,7 @@ export const cloudCreateFolder = data => {
 export const cloudRename = data => {
     const req = {
         data,
-        url: 'api/cloud/file/rename'
+        url: baseURL() + 'api/cloud/file/rename'
     }
     return http.post(req)
 }
@@ -1148,7 +1253,7 @@ export const cloudRename = data => {
 export const cloudUploadFile = data => {
     const req = {
         data,
-        url: 'api/cloud/file/upload'
+        url: baseURL() + 'api/cloud/file/upload'
     }
     return http.form(req)
 }
@@ -1157,7 +1262,7 @@ export const cloudUploadFile = data => {
 export const cloudDelete = data => {
     const req = {
         data,
-        url: 'api/cloud/file/delete'
+        url: baseURL() + 'api/cloud/file/delete'
     }
     return http.post(req)
 }
@@ -1165,16 +1270,25 @@ export const cloudDelete = data => {
 //云空间下载文件
 export const cloudDownload = id => {
     const req = {
-        url: 'api/cloud/file/download/' + id
+        url: baseURL() + 'api/cloud/file/download/' + id
     }
     return http.getFile(req)
+}
+
+//云空间查询目录和文件
+export const cloudList = data => {
+    const req = {
+        data,
+        url: baseURL() + 'api/cloud/file/list'
+    }
+    return http.post(req)
 }
 
 //取消方案 在未知支付保证金情况下可以取消
 export const cloudStorageCancel = data => {
     const req = {
         data,
-        url: 'api/cloud/storage/cancel'
+        url: baseURL() + 'api/cloud/storage/cancel'
     }
     return http.post(req)
 }
@@ -1184,7 +1298,7 @@ export const cloudStorageCancel = data => {
 export const cloudStorageApplyClose = data => {
     const req = {
         data,
-        url: 'api/cloud/storage/applyClose'
+        url: baseURL() + 'api/cloud/storage/applyClose'
     }
     return http.post(req)
 }
@@ -1192,7 +1306,7 @@ export const cloudStorageApplyClose = data => {
 export const cloudStorageNoClose = data => {
     const req = {
         data,
-        url: 'api/cloud/storage/noClose'
+        url: baseURL() + 'api/cloud/storage/noClose'
     }
     return http.post(req)
 }
@@ -1200,7 +1314,41 @@ export const cloudStorageNoClose = data => {
 export const cloudStorageYesClose = data => {
     const req = {
         data,
-        url: 'api/cloud/storage/yesClose'
+        url: baseURL() + 'api/cloud/storage/yesClose'
+    }
+    return http.post(req)
+}
+//token 登录
+export const tokenLogin = data => {
+    const req = {
+        data,
+        url: baseURL() + 'pc/api/user/tokenlogin'
+    }
+    return http.post(req)
+}
+
+//通过钱包地址获取用户信息
+export const infoByWalletAddress = data => {
+    const req = {
+        data,
+        url: baseURL() + 'pc/api/user/infoByWalletAddress'
+    }
+    return http.post(req)
+}
+//判断是否有可用空间
+export const cloudCheck = data => {
+    const req = {
+        data,
+        url: baseURL() + 'api/cloud/file/check'
+    }
+    return http.post(req)
+}
+
+// 删除多个文件或目录
+export const cloudDeleteByIds = data => {
+    const req = {
+        data,
+        url: baseURL() + 'api/cloud/file/deleteByIds'
     }
     return http.post(req)
 }

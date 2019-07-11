@@ -1,12 +1,16 @@
 <template>
     <div class="shade">
         <div class="contain">
-            <div class="exit" @click="__exit"></div>
             <div @click="__delete">删除</div>
+            <div class="border"></div>
             <div @click="__forward">转发</div>
+            <div class="border"></div>
             <div @click="__copy()">复制</div>
+            <div class="border"></div>
             <div @click="__collect()">收藏</div>
+            <div class="border"></div>
             <div @click="__clear()">清空</div>
+            <div class="border"></div>
         </div>
     </div>
 </template>
@@ -24,7 +28,6 @@ export default {
             userInfo: state => state.UserInfo.userInfo,
             webIMList: state => state.WebImQueue.webIMList,
             chatRecords: state => state.WebImQueue.chatRecords
-
         })
     },
     methods: {
@@ -37,12 +40,15 @@ export default {
             this.__exit();
         },
         __forward() {
+            console.log(this.msgItem)
             this.SET_IMFORWARD_STATE(this.msgItem);
+            this.__exit();
         },
         __copy() {
-            var Url2 = document.querySelector(".msg");
-            Url2.select(); // 选择对象
-            document.execCommand("Copy"); // 执行浏览器复制命令
+            const { clipboard } = require('electron')
+            clipboard.writeText(this.msgItem.msg);
+            this.$Toast('复制成功');
+            this.__exit();
         },
         __collect() {
             let type = 0;
@@ -59,12 +65,14 @@ export default {
                 chatContentList: [obj],
                 collectionVOList: [obj]
             };
-            this.api.snsCollectSave(req);
+            this.api.snsCollectSave(req).then(res => {
+                this.$Toast(res.msg);
+            })
+            this.__exit();
         },
         __clear() {
-            console.log(this.userType)
-            console.log(this.userId)
             this.CLEAR_MSG_LIST(this.opeIdx);
+            this.__exit();
         }
     }
 };
@@ -73,25 +81,27 @@ export default {
 .shade {
     position: absolute;
     top: -20px;
-    right: 46px;
-    width: 60px;
+    left: 146px;
     z-index: 1;
     border: 1px solid #eaeaea;
     border-bottom: none;
 }
 .contain {
-    width: 60px;
-    height: 74%;
+    width: 116px;
     background: #fff;
-    margin: 0 auto;
     padding-top: 1px;
     position: relative;
-    > div:not(.exit) {
-        height: 20px;
-        line-height: 20px;
-        text-align: center;
-        border-bottom: 1px solid #eaeaea;
-        font-size: 12px;
+    > div:not(.border) {
+        height: 30px;
+        line-height: 30px;
+        text-indent: 2em;
+        margin: 6px 0;
+    }
+    > div:hover {
+        background: #ecf0f7;
+    }
+    .border {
+        border-bottom: 1px solid #e8eaed;
     }
 }
 .exit {

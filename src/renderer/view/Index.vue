@@ -28,6 +28,12 @@
         <FeedAccessMenu></FeedAccessMenu>
         <DealDetail v-if="dealState"></DealDetail>
         <PreviewImg v-if="previewState"></PreviewImg>
+        <MyMoneyCode v-if="MyMoneyCodeShow"></MyMoneyCode>
+        <Transfer v-if="TransferShow"></Transfer>
+        <GroupCode v-if="GroupCodeShow"></GroupCode>
+        <GroupDetail v-if="groupId"></GroupDetail>
+        <GroupAdd v-if="groupAddShow"></GroupAdd>
+        <MessageBox v-if="messageShow"></MessageBox>
     </div>
 
 </template>
@@ -50,6 +56,12 @@ import FeedForward from '@/components/Main/FeedForward'
 import FeedReward from '@/components/Main/FeedReward'
 import FeedPayLook from '@/components/Main/FeedPayLook'
 import FeedAccessMenu from '@/components/Main/FeedAccessMenu'
+import MyMoneyCode from '@/components/Wallet/MyMoneyCode'
+import Transfer from '@/components/Wallet/Transfer'
+import GroupCode from '@/components/WebIM/GroupCode'
+import GroupDetail from '@/components/WebIM/GroupDetail'
+import GroupAdd from '@/components/WebIM/GroupAdd'
+import MessageBox from '@/components/WebIM/MessageBox'
 export default {
     data() {
         return {}
@@ -71,7 +83,13 @@ export default {
         FeedAccessMenu,
         FeedReward,
         FeedAccessMenu,
-        PreviewImg
+        PreviewImg,
+        MyMoneyCode,
+        Transfer,
+        GroupCode,
+        GroupDetail,
+        GroupAdd,
+        MessageBox
     },
     computed: {
         ...mapState({
@@ -83,8 +101,22 @@ export default {
             webIMList: state => state.WebImQueue.webIMList,
             mapState: state => state.WebImQueue.mapState,
             dealState: state => state.Wallet.dealState,
-            previewState: state => state.Feed.previewState
+            previewState: state => state.Feed.previewState,
+            MyMoneyCodeShow: state => state.Wallet.MyMoneyCodeShow,
+            TransferShow: state => state.Wallet.TransferShow,
+            GroupCodeShow: state => state.WebImQueue.GroupCodeShow,
+            groupId: state => state.WebImQueue.groupId,
+            groupAddShow: state => state.WebImQueue.groupAddShow,
+            messageShow: state => state.WebImQueue.messageShow
         })
+    },
+    watch: {
+        groupId: {
+            handler(oldValue, newValue) {
+                console.log(oldValue)
+            },
+            immediate: true
+        }
     },
     methods: {
         ...mapMutations(['SET_EMOJI_STATE', 'SET_FEED_LIKE_STATE']),
@@ -149,8 +181,8 @@ export default {
     display: flex;
     > .view {
         display: flex;
-        flex-grow: 1;
-        overflow: hidden;
+        flex: 1;
+        // overflow: hidden;
     }
 }
 </style>

@@ -11,10 +11,13 @@
                               class="icon check"
                               :class="{'checked':item.check}"></span>
                         <span class="icon collect"
+                              v-if="name!=='local'"
                               @click="__setCollect(item)"
                               :class="{'collected':item.isCollected}"></span>
+                        <!-- &&name!=='local' -->
                         <span class="icon cloud"
                               v-if="item.isClouds"></span>
+                        <!-- &&!item.isClouds -->
                         <span class="icon local"
                               v-if="item.isLocal"></span>
 
@@ -45,6 +48,9 @@ export default {
             default: () => {
                 return []
             }
+        },
+        name: {
+            type: String
         }
     },
     data() {

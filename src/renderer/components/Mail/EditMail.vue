@@ -15,7 +15,7 @@
                       :class="{'active':selectNum=== index,[item.class]:true,'locked':forwardMaxno>0,'ed':emojiShow}"
                       @click="__cleckTools(item.class,index)"></span>
                 <span class="send cp"
-                      @click="__send()"> {{$t('email.send')}} </span>
+                      @click="__send"> {{$t('email.send')}} </span>
                 <div ref="toolbar"
                      v-show="toolBar"
                      class="toolbar">
@@ -44,11 +44,12 @@
                 <span class="n">{{$t('email.to')}} </span>
                 <!-- <input v-model="acceptUserId"
                        type="text"> -->
-                <ul class="list">
+                <ul class="list"
+                    @keyup.enter='__searchUser'>
                     <li v-for="(item,index) in displayList"
                         :key="index">
 
-                        <p>&lt;{{item.nickname}}&gt;</p><span class="x cp"
+                        <p>{{item.displayName||item.nickname}} </p><span class="x cp"
                               @click="__del(index)">x</span>
                     </li>
                     <li v-if="selectedList.length>3">
@@ -67,13 +68,14 @@
                 <div class="mask"
                      @click="__closeContact"></div>
                 <div class="view">
-                    <ul class="list">
+                    <ul class="list"
+                        @keyup.enter='__searchUser'>
 
                         <li class=""
                             v-for="(item,index) in selectedList"
                             :key="index">
                             <p>
-                                &lt;{{item.nickname}}&gt;
+                                {{item.displayName||item.nickname}}
                             </p><span class="x cp"
                                   @click="__del(index)">x</span>
                         </li>
@@ -185,11 +187,27 @@
                 </div>
                 <div class="btn">
                     <span class="cp"
-                          @click="__switch">{{$t('email.cancel')}}</span>
+                          @click="__switch">{{$t('cancel')}}</span>
                     <span class="done cp"
-                          @click="__done">{{$t('email.confirm')}}</span>
+                          @click="__done">{{$t('confirm')}}</span>
                 </div>
             </div>
+        </div>
+        <div class="mask1"
+             v-if="dialogState"
+             @click.self="__dialogOut">
+            <div class="details">
+                <p class="title">内容已被修改,是否将此内容存为草稿?</p>
+                <div class="btn">
+                    <span class="cp"
+                          @click="__dialogConfirm">是</span>
+                    <span class="cp"
+                          @click="__dialogCancel">否</span>
+                    <span class="cp"
+                          @click="__dialogOut">{{$t('cancel')}}</span>
+                </div>
+            </div>
+
         </div>
         <!-- <div class="mask"
              v-if="forwardShow">
@@ -256,7 +274,9 @@ export default {
             searchlist: [],
             forwardMaxno: 0, //最大转发次数
             forwardShow: false,
-            emojiShow: false
+            emojiShow: false,
+            emailContent: this.$t('email.text5'),
+            dialogState: false
         }
     },
     components: { Scroll, EmojiPanel },
@@ -277,12 +297,9 @@ export default {
                 { class: 'upload', lang: this.$t('email.attachment') },
                 { class: 'link', lang: this.$t('email.link') },
                 { class: 'emoji', lang: this.$t('email.emoji') },
-                { class: 'lock', lang: this.$t('email.isRepost') },
-                { class: 'trash', lang: this.$t('email.delete') }
+                { class: 'lock', lang: this.$t('email.isRepost') }
+                // { class: 'trash', lang: this.$t('email.delete') }
             ]
-        },
-        emailContent() {
-            return this.$t('email.text5')
         },
 
         title() {
@@ -311,6 +328,38 @@ export default {
         }
     },
     methods: {
+        async __searchUser() {
+            let res = {}
+            if (this.searchValue.length == 81) {
+                res = await this.api.infoByWalletAddress({
+                    collectionAddress: this.searchValue
+                })
+                if (res.code === 0) {
+                    let item = res.data
+                    item.displayName = this.searchValue
+                    this.__select(item)
+                    this.searchValue = ''
+                } else {
+                    this.$Toast(res.msg)
+                }
+            } else if (!/[\u4e00-\u9fa5]/gm.test(this.searchValue)) {
+                res = await this.api.searchUser({
+                    currentPage: 1,
+                    pageSize: 1,
+                    keyWord: this.searchValue,
+                    userId: this.userInfo.userId
+                })
+
+                if (res.data.list.length) {
+                    let item = res.data.list[0]
+                    item.displayName = this.searchValue
+                    this.__select(item)
+                    this.searchValue = ''
+                } else {
+                    this.$Toast('该用户不存在')
+                }
+            }
+        },
         async __getFriendlist() {
             const res = await Promise.all([
                 this.api.emailRecentuserlist(this.userInfo.userId),
@@ -348,13 +397,18 @@ export default {
             switch (name) {
                 case 'tools':
                     this.toolBar = !this.toolBar
+                    this.emojiShow = false
+
                     break
                 case 'upload':
                     this.toolBar = false
                     this.$refs.UpFile.click()
+                    this.emojiShow = false
                     break
                 case 'link':
                     this.toolBar = false
+                    this.emojiShow = false
+
                     this.__switch()
                     break
                 case 'emoji':
@@ -364,6 +418,7 @@ export default {
                 case 'lock':
                     this.toolBar = false
                     this.forwardMaxno = this.forwardMaxno ? 0 : 1
+                    this.emojiShow = false
 
                     //this.__forwardSwitch()
                     break
@@ -375,23 +430,20 @@ export default {
         },
 
         __setEmoji(emoji) {
-            console.log(typeof emoji, 'emoji')
-
             this.emailContent += emoji
-            console.log(this.emailContent)
         },
         __getContent(html) {
             this.emailContent = html
             // console.log(html)
         },
 
-        async __send() {
+        async __send(status = 1) {
             let data = {
                 acceptUserIds: this.acceptUserIds,
                 // acceptUserName: 'string',
                 attachmentIds: this.attachmentIds,
                 emailContent: this.emailContent,
-                emailStatus: status || 1,
+                emailStatus: status,
                 emailTitle: this.emailTitle,
                 forwardMaxno: this.forwardMaxno,
                 sendUserId: this.userInfo.userId,
@@ -412,12 +464,20 @@ export default {
             }
         },
         __close() {
-            if (this.emailContent !== '') {
-                // this.$Toast('邮件自动保存为草稿')
-                //this.__send(0)
+            if (this.emailContent != this.item.emailContent) {
+                this.dialogState = true
             } else {
+                this.$emit('close', false)
             }
+        },
+        __dialogCancel() {
             this.$emit('close', false)
+        },
+        __dialogConfirm() {
+            this.__send(0)
+        },
+        __dialogOut() {
+            this.dialogState = false
         },
         __editorInit() {
             this.editor = new E(this.$refs.toolbar, this.$refs.editor)
@@ -584,8 +644,13 @@ export default {
     mounted() {
         this.__editorInit()
     },
+
     created() {
         this.__getFriendlist()
+        this.$bus.on('checkEmailState', this.__close)
+    },
+    beforeDestroy() {
+        this.$bus.off('checkEmailState', this.__close)
     }
 }
 </script>
@@ -1050,6 +1115,46 @@ export default {
                 color: #fff;
                 background: #3f61a6;
                 margin-left: 30px;
+            }
+        }
+    }
+}
+.mask1 {
+    position: fixed;
+    top: 80px;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 1000;
+    background: rgba(0, 0, 0, 0.8);
+    overflow: auto;
+    .details {
+        position: absolute;
+        left: 50%;
+        top: 55%;
+        width: 260px;
+        transform: translate(-50%, -50%);
+        text-align: center;
+        background: #ffffff;
+        .title {
+            height: 60px;
+            line-height: 60px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+        }
+        .btn {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            height: 40px;
+            line-height: 40px;
+            span {
+                flex-grow: 1;
+            }
+
+            > :nth-of-type(1),
+            > :nth-of-type(2) {
+                // background: #000;
+                border-right: 1px solid rgba(0, 0, 0, 0.1);
             }
         }
     }

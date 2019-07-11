@@ -2,7 +2,6 @@ import axios from 'axios'
 import qs from 'qs'
 import router from '@/router'
 import store from '@/store'
-const baseURL = 'http://139.196.98.22:8081/angel/'
 
 axios.interceptors.request.use(
     config => {
@@ -64,7 +63,6 @@ export default {
     post(req) {
         return axios({
             method: 'post',
-            baseURL: baseURL,
             url: req.url,
             data: req.data,
             timeout: 120000,
@@ -79,7 +77,6 @@ export default {
     form(req) {
         return axios({
             method: 'post',
-            baseURL: baseURL,
             url: req.url,
             data: req.data,
             // timeout: 10000,
@@ -102,7 +99,6 @@ export default {
     get(req) {
         return axios({
             method: 'get',
-            baseURL: baseURL,
             url: req.url,
             params: req.data, // get 请求时带的参数
             timeout: 10000,
@@ -116,7 +112,6 @@ export default {
     getFile(req) {
         return axios({
             method: 'get',
-            baseURL: baseURL,
             url: req.url,
             responseType: 'arraybuffer',
             params: req.data, // get 请求时带的参数

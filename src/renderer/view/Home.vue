@@ -48,7 +48,9 @@ export default {
     position: fixed;
 }
 .column {
-    width: 75%;
+    position: relative;
+    width: 860px;
+    min-width: 860px;
     background: #eeeeef;
 }
 </style>

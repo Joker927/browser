@@ -46,7 +46,17 @@ export default {
             '我们竭尽所能想要提供最理想的产品，并为所有用户制订明确的使用规范。 然而，我们的系统系「依现状提供」，我们不保证任何时候均为安全、可靠及运作正常，亦不保证在执行时不会有中断、延迟或故障的情形发生。 在法律允许的范围内，我们亦明确声明不负任何明示或默示之担保责任，其中包括适销性、特定用途的适用性、所有权及非侵权等担保。 我们无法控制或指示其他用户的言行，因此我们对用户的动作或行为（无论在线或脱机）及他们分享的任何内容（包括有冒犯性、言词不当、猥亵、违法和其他令人反感的内容）概不负任何责任。',
             '我们无法预测系统何时会发生问题，因此，我们应承担的责任以适用法律所允许的最大范围为限。 此外，在任何情况下，我们对于您的任何利益、收入、信息及数据损失，以及因本条款或 Gitium所引起或与之相关的连带、特殊、间接、惩罚性、惩戒性或偶发性损害，均不负任何责任，即使在我们已得知可能发生此等损害的情况下亦然。'
         ],
-        passwordNoAlike: '两次输入密码不一致'
+        passwordNoAlike: '两次输入密码不一致',
+        sendCode: '发送验证码',
+        inputCode: '输入验证码',
+        findBack: '找回密码',
+        toast8: '此帐号未在本机器登录过,不能找回密码.',
+        remember: '记住密码',
+        host: {
+            host: '主机',
+            title: '编辑节点配置',
+            selectHost: '选择主机'
+        }
     },
     collect: {
         collect: '收藏',
@@ -152,7 +162,9 @@ export default {
         attachment: '附件',
         delete: '删除',
         emoji: '表情',
-        isRepost: '是否允许转发'
+        isRepost: '是否允许转发',
+        upload: '云端上传',
+        delete: '云端删除'
     },
     main: {
         add: '添加',
@@ -240,7 +252,8 @@ export default {
         confirmTxt: '确定删除?',
         setPriceFlag: '请先设置作品收费方式',
         refresh: '加载更多',
-        success: '加载成功'
+        success: '加载成功',
+        loadMore: ['加载了', '条动态', '更新了', '刷新查看']
     },
     side: {
         createagroup: '创建群组',
@@ -275,7 +288,8 @@ export default {
         wallet: '钱包',
         personalWorks: '个人作品设定',
         giveSet: '打赏设置',
-        bill: '账单记录'
+        bill: '账单记录',
+        moneyCode: '我的收款码'
     },
     tab: {
         home: '主页'
@@ -403,7 +417,19 @@ export default {
         redExpalin: '给你发了一个红包',
         reded: '红包已领取',
         open: '开',
-        SuccessfulTrade: '交易成功'
+        SuccessfulTrade: '交易成功',
+        change: '更改',
+        groupHeadImg: '群头像',
+        groupName: '群名称',
+        delete: '移除',
+        grouper: '群主',
+        ungroup: '解散群组',
+        exitGroup: '退出群组',
+        lookGroupDetail: '查看群组详情',
+        downloadQRCode: '下载二维码',
+        setAmount: '设定金额',
+        payObj: '支付对象',
+        copyAddress: '复制收款地址'
     },
     cloud: {
         buyTitle: '空间购买',
@@ -468,6 +494,9 @@ export default {
         tip3: '你确定要这么做吗?',
         tip4: '请先安装IPFS服务端',
         tip5: '已安裝',
+        tip6: '已安装，不再提醒',
+        tip7: '请输入必填内容',
+        tip8: '余额不足',
         sellTitle1: '分享空间',
         sellTitle2: '租赁定价',
         tip2: ['需支付', '保证金(25%)', ',方案结束自动退回保证金'],

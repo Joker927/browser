@@ -10,11 +10,10 @@
                         <!-- <span class="icon"></span> -->
                         <!-- <span class="icon"></span> -->
                         <!-- <span class="icon" @click="__headerSetShow(index)"></span> -->
-
                         <span class="icon" @click="__changeShow(index)">_</span>
-                        <span class="icon" @click="__changeSize(index)"></span>
+                        <span class="icon groupSet" v-if="item.type=='group'" @click="__groupSetShow(index,item)"></span>
+                        <span class="icon setSize" @click="__changeSize(index)"></span>
                         <span class="icon" @click="__closeIm(index)"></span>
-
                     </div>
                     <!-- <div class="header-set" v-if="index==headerSetIdx">
                         <div @click="changeNameShow=true"><img src="./img/chat_setting_change name@2x.png" />更改名称</div>
@@ -24,7 +23,7 @@
                         <div><img src="./img/chat_setting_delete@2x.png" />删除聊天记录</div>
                     </div> -->
                 </header>
-                <div class="conWrap" :style="{height:item.height}">
+                <div class="conWrap" :style="{height:item.height}" @click="__exitOperation">
                     <ul class="feed imFrame" id="feed">
                         <li class="a" :class="{'b':items.type==0}" v-for="(items,indexs) in item.msgList" :key="indexs" @contextmenu="__operationShow(index,indexs,items)">
                             <img class='headerImg' :src="items.avatar" v-if="items.type==1&&items.avatar&&items.messageType!=9">
@@ -53,12 +52,12 @@
                                 </div>
                                 <audio :src="items.msg" class="audio"></audio>
                             </div>
-                            <div v-if="items.messageType==4" class="address" @click="SET_MAP_STATE(items.msg)">
-                                <div class="title">
+                            <div v-if="items.messageType==4" class="address" @click="__addressShow(item,items.msg,index)">
+                                <div class="title" :class="{anotherTitle:items.type=='0'}">
                                     {{items.msg.address}}
                                 </div>
                                 <div>
-                                    <img :src="items.msg.mapScreenShot" />
+                                    <img :src="items.msg.mapScreenShot" style="width:175px;" :class="{anotherTitle:items.type=='0'}" />
                                 </div>
                             </div>
                             <div v-if="items.messageType==5" class="gathering" @click="__transferDetailShow(index,items)">
@@ -90,6 +89,7 @@
                                     </div>
                                 </div>
                             </div>
+                            <div v-if="items.messageType==9" class="groupGathering" @click="__getRedShow(index,items,item,indexs)"></div>
                             <div v-if="items.messageType==11" class="msg" @click="__previewDynamic(items.msg)">
                                 <div class="clearfix">
                                     <div class="fl" style="width:calc(100% - 40px);padding-right:10px">
@@ -116,6 +116,7 @@
                     <GetRed v-if="getRedIdx==index" :red-msg='redMsgIdx' :user-id="item.userId" :red-info="getRedInfo" :user-idx="index" :user-name="item.userName" :user-type="item.type" :group-id="item.groupId" v-on:changeStatus="__exitGetRed"></GetRed>
                     <RedDetail v-if="redDetailIdx==index" :red-info="redInfo" :user-name="item.userName" v-on:changeStatus="__exitRedDetail"></RedDetail>
                     <Operation v-if="operationIdx==index" :msg-idx="operationMsgIdx" :ope-idx="index" :user-id="item.userId || item.groupId" :user-type="item.type" :msg-item="operationMsgItem" :user-name="item.userName" :head="item.avatar" v-on:changeStatus="__exitOperation"></Operation>
+                    <GroupSet v-if="groupSetIdx==index" :group-id="item.groupId" :idx="index"></GroupSet>
                 </div>
                 <div class="input">
                     <input type="text" class="inputItem" :placeholder="$t('webim.placeholder')" @keyup.enter="__submitMsg(index,item)" @blur="__blurInput(index)">
@@ -128,6 +129,8 @@
                         <!-- <span class="icon"></span> -->
                         <span class="icon transferIcon" v-if="item.type=='personal'" @click="__transferShow(index)"></span>
                         <span class="icon redIcon" @click="__redShow(index)"></span>
+                        <span class="icon addressIcon" @click="__addressShow(item,'',index)"></span>
+                        <span class="icon groudCode" v-if="item.type=='group'" @click="SET_GROUPCODE_STATE({groupId:item.groupId,groupName:item.userName})"></span>
                     </div>
                 </div>
             </div>
@@ -147,6 +150,7 @@ import GetRed from "./GetRed";
 import RedDetail from "./RedDetail";
 import EmojiPanel from "./EmojiPanel";
 import Operation from "./Operation";
+import GroupSet from "./GroupSet";
 
 export default {
     props: ["webIMList"],
@@ -172,7 +176,8 @@ export default {
             operationMsgItem: "",
             redInfo: {},
             righttime: null,
-            voiceImgShow: 1
+            voiceImgShow: 1,
+            groupSetIdx: 99 //群组设置
         };
     },
     components: {
@@ -183,7 +188,8 @@ export default {
         GetRed,
         RedDetail,
         EmojiPanel,
-        Operation
+        Operation,
+        GroupSet
     },
     watch: {
         webIMList: {
@@ -223,7 +229,8 @@ export default {
             "SPLICE_MSG_LIST",
             "SET_FEED_VIEW_DYNAMIC_ID",
             "DELETE_WEBIM_LIST",
-            "SET_MAP_STATE"
+            "SET_MAP_STATE",
+            "SET_GROUPCODE_STATE"
         ]),
 
         //预览转发动态
@@ -232,6 +239,21 @@ export default {
                 id: msg.dynamicId,
                 t: new Date().getTime()
             });
+        },
+        //显示地址，1：查看地址，2：发送地址
+        __addressShow(mapMsgToInfo, mapItem, index) {
+            mapMsgToInfo.userIdx = index;
+            this.SET_MAP_STATE({
+                mapItem,
+                mapMsgToInfo
+            });
+        },
+        __groupSetShow(index, item) {
+            if (this.groupSetIdx == index) {
+                this.groupSetIdx = 99;
+                return;
+            }
+            this.groupSetIdx = index;
         },
         __operationShow(index, indexs, item) {
             this.operationIdx = index;
@@ -245,6 +267,7 @@ export default {
             this.SET_WEBIM_SIZE(index);
         },
         __closeIm(index) {
+            this.groupSetIdx = 99;
             this.DELETE_WEBIM_LIST(index);
         },
         //设置菜单显示、隐藏
@@ -682,11 +705,14 @@ export default {
                 text-align: center;
                 margin-top: -4px;
             }
-            > span:nth-of-type(2) {
+            .setSize {
                 background-image: url("./img/icon_14@2x.png");
             }
-            > span:nth-of-type(3) {
+            > span:last-of-type {
                 background-image: url("./img/icon_15@2x.png");
+            }
+            .groupSet {
+                background-image: url("./img/icon_13@2x.png");
             }
         }
         .conWrap {
@@ -791,6 +817,16 @@ export default {
                     position: relative;
                     background-size: 76% 76%;
                 }
+                .addressIcon {
+                    background: url("./img/address.png") 2px 2px no-repeat;
+                    position: relative;
+                    background-size: 78% 78%;
+                }
+                .groudCode {
+                    background: url("./img/timg1.jpg") 2px 2px no-repeat;
+                    position: relative;
+                    background-size: 78% 78%;
+                }
             }
         }
     }
@@ -889,14 +925,17 @@ export default {
     background: rgb(128, 255, 0);
 }
 .address {
-    .title{
-        height: 20px;
+    .title {
         line-height: 20px;
         background: #eeeeee;
         color: #333;
     }
-    img{
-        width: 170px;
+    img {
+        width: 175px;
+    }
+    .anotherTitle {
+        width: 165px !important;
+        position: relative;
     }
 }
 .gathering {

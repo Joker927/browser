@@ -145,7 +145,6 @@
 <script>
 import { mapState, mapMutations } from 'vuex'
 import UserForgetPwd from './UserForgetPwd'
-import { tr } from 'date-fns/locale'
 export default {
     data() {
         return {

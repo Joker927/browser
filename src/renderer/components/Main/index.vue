@@ -1,7 +1,7 @@
 <template>
     <div class="h100">
         <RequestNotify></RequestNotify>
-
+        <Toast></Toast>
         <Head></Head>
         <div class="mainContent">
             <div class="l">
@@ -20,12 +20,13 @@ import { mapState } from 'vuex'
 import RequestNotify from './RequestNotify'
 import Head from './Head'
 import Recommend from './Recommend'
+import Toast from './Toast'
 
 export default {
     data() {
         return {}
     },
-    components: { RequestNotify, Head, Recommend },
+    components: { RequestNotify, Head, Recommend,Toast },
     computed: {
         ...mapState({
             userInfo: state => state.UserInfo.userInfo

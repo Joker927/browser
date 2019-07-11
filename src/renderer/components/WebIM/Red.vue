@@ -11,7 +11,7 @@
                 </div>
                 <div class="fl" @click="currentyShow=true">
                     {{select.symbol}}
-                    <div v-if="currentyShow">
+                    <div v-if="currentyShow" style="z-index:1">
                         <div v-for="(item,index) in propertyList" :key="index" @click.stop='__select(item)'>
                             {{item.symbol}}
                         </div>

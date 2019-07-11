@@ -5,7 +5,8 @@
               @edit='__edit(true)'></Menu>
         <div class="mailContent">
             <div>
-                <TopBar @refresh='__refresh'
+                <TopBar v-if="!visible"
+                        @refresh='__refresh'
                         @turnPage='__turnPage'
                         @selectAll="__selectAll"
                         :selectedArr='selectedMails'
@@ -14,6 +15,7 @@
                 <div class="scrollWrap">
                     <Scroll>
                         <Mails :data='mails'
+                               :name='name'
                                @show='__getEmailDetails'
                                @refresh='__refresh'
                                @selected='__mailSelected'></Mails>
@@ -29,6 +31,7 @@
 
                 <Details @close='__change'
                          @show='__editMail'
+                         @refresh='__getEmailDetails'
                          :item='emailItem'></Details>
             </div>
             <SideButtom class="abs"></SideButtom>
@@ -36,6 +39,8 @@
 
         <Modal v-if="mailListState"
                :name='name'></Modal>
+
+        <StorageDialog></StorageDialog>
     </div>
 </template>
 
@@ -49,6 +54,7 @@ import Menu from './Menu'
 import TopBar from './TopBar'
 import Mails from './Mails'
 import Details from './Details'
+import StorageDialog from '@/components/Cloud/StorageDialog'
 export default {
     data() {
         return {
@@ -59,7 +65,7 @@ export default {
             editFlag: false,
             emailItem: {},
             editItem: {}, //编辑邮件
-            isAll: false, //是否获取全部
+            isAll: true, //是否获取全部
             currPage: 1,
             subInfo: {}
         }
@@ -83,7 +89,8 @@ export default {
         Scroll,
         Modal,
         Details,
-        EditMail
+        EditMail,
+        StorageDialog
     },
 
     methods: {
@@ -117,6 +124,17 @@ export default {
                         /<[^>]+>/g,
                         ''
                     )
+                    let json = item.cloudPath
+                    if (json) {
+                        let jsonArr = JSON.parse(json)
+                        if (jsonArr.length) {
+                            item.isClouds = true
+                        } else {
+                            item.isClouds = false
+                        }
+                    } else {
+                        item.isClouds = false
+                    }
                 })
                 if (this.isAll) {
                     let localMails = this.__getLoaclMails()
@@ -313,7 +331,7 @@ export default {
 }
 .scrollWrap {
     position: absolute;
-    top: 56px;
+    top: 68px;
     bottom: 0;
     left: 0;
     right: 0;

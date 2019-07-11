@@ -18,7 +18,7 @@ export default {
     computed: {
         ...mapState({
             addPropertyShow: state => state.Wallet.addPropertyShow,
-            CNYRechargeShow: state => state.Wallet.CNYRechargeShow,
+            CNYRechargeShow: state => state.Wallet.CNYRechargeShow
         })
     },
     methods: {},

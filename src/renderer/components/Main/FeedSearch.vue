@@ -167,10 +167,23 @@ export default {
                 this.__getList()
             },
             immediate: true
+        },
+        $route: {
+            handler() {
+                let keyWord = this.$route.query && this.$route.query.q
+                if (keyWord) {
+                    this.req.keyWord = keyWord
+                }
+                this.req.currentPage = 1
+                this.userList = this.dynamicList = []
+                this.__getList()
+            },
+            immediate: true
         }
     },
     created() {
         this.routeName = this.$route.name
+
         this.$bus.on('turnPages' + this.routeName, this.__turnPages)
     },
     beforeDestroy() {

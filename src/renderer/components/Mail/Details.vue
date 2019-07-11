@@ -5,10 +5,12 @@
                 <!-- :class="{'checked':selectedArr.length}" -->
                 <span class="icon back"
                       @click="__close"></span>
-
                 <span class="icon cloud"
-                      v-if="item.isClouds!==1&&isLocal"
-                      @click="__cloudSave"></span>
+                      v-tip="$t('email.upload')"
+                      @click="__storageDialog('upload')"></span>
+                <span class="icon cloud del"
+                      v-tip="$t('email.delete')"
+                      @click="__storageDialog('delete')"></span>
                 <span class="icon local"
                       v-if="isLocal"
                       @click="__localSave"></span>
@@ -144,7 +146,10 @@ export default {
     components: { Scroll },
     computed: {
         ...mapState({
-            userInfo: state => state.UserInfo.userInfo
+            userInfo: state => state.UserInfo.userInfo,
+            storageIds: state => state.Mail.storageIds,
+            storageDialogState: state => state.Mail.storageDialogState,
+            isUpload: state => state.Mail.isUpload
         }),
         isLocal() {
             let userMail = localStorage.getItem('USERMAIL') || {}
@@ -167,27 +172,259 @@ export default {
                 }
             }
             return flag
+        },
+        isCloud() {
+            return this.item.isCloud !== 1
         }
     },
     methods: {
-        ...mapMutations(['SET_MAIL_LIST_STATE', 'SET_MAIL_PANEL_STATE']),
+        ...mapMutations([
+            'SET_MAIL_LIST_STATE',
+            'SET_MAIL_PANEL_STATE',
+            'SET_ISUPLOAD',
+            'SET_STORAGEDIALOG_STATE'
+        ]),
 
         __close() {
             this.$emit('close', false)
         },
-        async __cloudSave() {
-            let ids = [this.item.id]
-            let isClouds = this.item.isClouds != 1 ? 1 : 2
-            let req = {
-                isClouds: isClouds,
-                ids: ids,
-                userId: this.userInfo.userId
+        __refresh() {
+            this.$emit('refresh', true, this.item)
+        },
+        //查找email文件夹是否存在  存在则返回文件夹id
+        async __findEmailFolder() {
+            let ids = this.storageIds
+            let reqs = []
+            for (let i = 0; i < ids.length; i++) {
+                let req = this.api.cloudList({
+                    dirFlag: 1,
+                    fileType: 0,
+                    pid: 0,
+                    storageId: ids[i]
+                })
+                reqs.push(req)
+            }
+            const res = await Promise.all(reqs)
+            let folderName = 'email'
+            let emailFolders = []
+            for (let i = 0; i < res.length; i++) {
+                const folders = res[i].data
+                let storageId = this.storageIds[i]
+                if (folders.length) {
+                    let emailFolder = {}
+                    let flag = false
+                    for (let i = 0; i < folders.length; i++) {
+                        if (folders[i].fileName == folderName) {
+                            emailFolder = folders[i]
+                            flag = true
+                        }
+                    }
+                    if (flag) {
+                        emailFolders.push(emailFolder)
+                    } else {
+                        const folder = await this.__createFolder(
+                            folderName,
+                            storageId
+                        )
+                        emailFolders.push(folder)
+                    }
+                } else {
+                    const folder = await this.__createFolder(
+                        folderName,
+                        storageId
+                    )
+                    emailFolders.push(folder)
+                }
             }
 
-            const res = await this.api.emailOperate(req)
-            if (res.code !== 0) return
-            this.$Toast(this.$t('success'))
+            return emailFolders
         },
+
+        //email不存在则在所选节点根目录创建
+        async __createFolder(folderName, storageId) {
+            let folder = {}
+            const res = await this.api.cloudCreateFolder({
+                pid: 0,
+                folderName,
+                storageId
+            })
+            if (res.code === 0) {
+                folder = res.data
+            }
+            return folder
+        },
+
+        //上传邮件到email文件夹
+        async __uploadEmail(folders) {
+            let files = [this.item]
+            let reqs = []
+
+            for (let i = 0; i < folders.length; i++) {
+                const folder = folders[i]
+                for (let i = 0; i < files.length; i++) {
+                    let flag = true
+
+                    let json = files[i].cloudPath
+                    if (json) {
+                        let tempArr = JSON.parse(json)
+                        for (let k = 0; k < tempArr.length; k++) {
+                            if (folder.storageId === tempArr[k].storageId) {
+                                flag = false
+                            }
+                        }
+                    }
+                    if (flag) {
+                        console.log(files[i].id + '.txt', folder.storageId)
+                        let formData = new FormData()
+                        let blob = new Blob([JSON.stringify(files[i])], {
+                            type: 'application/json'
+                        })
+                        formData.append('file', blob, files[i].id + '.txt')
+                        formData.append('id', folder.id)
+                        formData.append('storageId', folder.storageId)
+                        reqs.push(this.api.cloudUploadFile(formData))
+                    }
+                }
+            }
+            return await Promise.all(reqs)
+        },
+        //删除emial文件夹下邮件
+        async __deleteEmail() {
+            let emails = [this.item]
+            let delIds = []
+            console.log(emails, 'emails')
+            let ids = this.storageIds
+            for (let i = 0; i < ids.length; i++) {
+                emails.forEach(item => {
+                    let json = item.cloudPath
+                    if (json) {
+                        let jsonArr = JSON.parse(json)
+                        console.log(jsonArr, '------')
+
+                        for (let k = 0; k < jsonArr.length; k++) {
+                            console.log(ids[i], jsonArr[k].storageId)
+                            if (ids[i] == jsonArr[k].storageId) {
+                                delIds.push(jsonArr[k].id)
+                                jsonArr.splice(k, 1)
+                                k--
+                            }
+                        }
+                        item.cloudPath = JSON.stringify(jsonArr)
+                    }
+                })
+            }
+            const res = await this.api.cloudDeleteByIds({ ids: delIds })
+            return res
+        },
+        async __hasCloud() {
+            return await this.api.cloudCheck()
+        },
+
+        __getCloudPath(uploadRes) {
+            let res = {}
+            let reg = /\d*(?=.txt)/
+
+            for (let i = 0; i < uploadRes.length; i++) {
+                let item = uploadRes[i]
+                if (item.code === 0) {
+                    let emailId = reg.exec(item.data.fileName)[0]
+                    if (!emailId) continue
+                    if (!res[emailId]) {
+                        let tempArr = uploadRes.filter(ele => {
+                            if (ele.code === 0) {
+                                let emailId1 = reg.exec(ele.data.fileName)[0]
+                                return emailId === emailId1
+                            }
+                        })
+                        res[emailId] = tempArr.map(ele => {
+                            return {
+                                id: ele.data.id,
+                                pid: ele.data.pid,
+                                storageId: ele.data.storageId
+                            }
+                        })
+                    }
+                }
+            }
+            return res
+        },
+
+        //更改邮件cloudpath
+        async __changeCloudPath(cloudPath) {
+            let reqs = []
+            let files = [this.item]
+            files.forEach(item => {
+                let itemPath = item.cloudPath && JSON.parse(item.cloudPath)
+                let pathArr = cloudPath[item.id] || []
+                if (itemPath instanceof Array) {
+                    pathArr = pathArr.concat(itemPath)
+                }
+                let req = {
+                    cloudPath: JSON.stringify(pathArr),
+                    id: item.id
+                }
+                reqs.push(this.api.emailUpdateCloudPath(req))
+            })
+
+            const res = await Promise.all(reqs)
+            console.log(res, '__changeCloudPath')
+            return res
+        },
+
+        /* 
+            邮件上传云端成功后回调服务器更改邮件状态
+        */
+        async __cloudSave() {
+            const folders = await this.__findEmailFolder()
+            const uploadRes = await this.__uploadEmail(folders)
+            const path = this.__getCloudPath(uploadRes)
+
+            return this.__changeCloudPath(path)
+        },
+        //邮件删除
+        async __cloudDel() {
+            await this.__deleteEmail()
+            let reqs = []
+            let files = [this.item]
+            files.forEach(item => {
+                let req = {
+                    cloudPath: item.cloudPath,
+                    id: item.id
+                }
+                reqs.push(this.api.emailUpdateCloudPath(req))
+            })
+
+            const res = await Promise.all(reqs)
+        },
+
+        async __cloudOperate() {
+            if (this.isUpload) {
+                await this.__cloudSave()
+            } else {
+                await this.__cloudDel()
+            }
+            this.$Toast(this.$t('success'))
+            this.__refresh()
+        },
+        async __storageDialog(command) {
+            const data = await this.__hasCloud()
+            if (data.code === 0) {
+                this.SET_STORAGEDIALOG_STATE(true)
+            } else {
+                this.$Toast(data.msg)
+            }
+
+            switch (command) {
+                case 'upload':
+                    this.SET_ISUPLOAD(true)
+                    break
+                case 'delete':
+                    this.SET_ISUPLOAD(false)
+                    break
+            }
+        },
+
+        //下载全部附件
         __downloadAll() {
             const zip = new JSZip()
             const promises = []
@@ -266,6 +503,8 @@ export default {
 
             this.$emit('show', mail)
         },
+
+        //邮件存到本地localStorage
         __localSave() {
             let userMail = localStorage.getItem('USERMAIL') || {}
             if (typeof userMail === 'string') {
@@ -307,12 +546,13 @@ export default {
             })
         }
     },
-    watch: {
-        $route() {
-            console.log(this.$route, 'route')
-        }
+    watch: {},
+    created() {
+        this.$bus.on('emailCloudOperate', this.__cloudOperate)
     },
-    created() {}
+    beforeDestroy() {
+        this.$bus.off('emailCloudOperate', this.__cloudOperate)
+    }
 }
 </script>
 
@@ -356,6 +596,10 @@ export default {
             width: 18px;
             height: 18px;
             background-image: url('./img/icon_10@2x.png');
+            &.del {
+                background: url('./img/icon_10del@2x.png') no-repeat center;
+                background-size: 80% 80%;
+            }
         }
 
         .local {

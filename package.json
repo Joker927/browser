@@ -49,9 +49,9 @@
         "linux": {
             "icon": "build/icons"
         },
-        "nsis": {   
-            "oneClick": false,   
-            "allowToChangeInstallationDirectory": true,   
+        "nsis": {
+            "oneClick": false,
+            "allowToChangeInstallationDirectory": true,
             "perMachine": true
         }
     },
@@ -64,8 +64,10 @@
         "gitium.seed.js": "^1.0.2",
         "js-md5": "^0.7.3",
         "jszip": "^3.1.5",
+        "lodash.mergewith": "4.6.2",
         "qrcodejs2": "^0.0.2",
         "vue": "^2.5.16",
+        "vue-amap": "^0.5.9",
         "vue-bus": "^1.2.0",
         "vue-electron": "^1.0.6",
         "vue-i18n": "^8.8.2",

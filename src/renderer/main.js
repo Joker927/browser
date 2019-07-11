@@ -1,6 +1,14 @@
 import Vue from 'vue'
 import axios from 'axios'
 import * as api from './api'
+// import VueAMap from 'vue-amap'
+// Vue.use(VueAMap);
+// VueAMap.initAMapApiLoader({
+//     key: 'ee3a8beaed04769b9826fcb0da76f552',
+//     plugin: ['AMap.Autocomplete', 'AMap.PlaceSearch', 'AMap.Scale', 'AMap.OverView', 'AMap.ToolBar', 'AMap.MapType', 'AMap.PolyEditor', 'AMap.CircleEditor'],
+//     // 默认高德 sdk 版本为 1.4.4
+//     v: '1.4.4'
+// });
 
 import App from './App'
 
@@ -21,7 +29,6 @@ Vue.use(VueBus)
 Vue.prototype.$Toast = Toast.install
 
 if (!process.env.IS_WEB) Vue.use(require('vue-electron'))
-Vue.http = Vue.prototype.$http = axios
 Vue.prototype.api = api
 Vue.config.productionTip = false
 
@@ -43,7 +50,9 @@ Vue.directive('tip', tip)
 
 /* eslint-disable no-new */
 new Vue({
-    components: { App },
+    components: {
+        App
+    },
     router,
     store,
     i18n,

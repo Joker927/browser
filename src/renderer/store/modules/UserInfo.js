@@ -3,7 +3,11 @@ const state = {
     token: '',
     seed: localStorage.getItem('SEED'),
     addressList: JSON.parse(localStorage.getItem('ADDRESSLIST')), //用户账户地址列表
-    lastAddress: localStorage.getItem('LASTADDRESS')
+    lastAddress: localStorage.getItem('LASTADDRESS'),
+    nodes: {
+        host: '',
+        walletHost: ''
+    }
 }
 
 const mutations = {
@@ -40,6 +44,18 @@ const mutations = {
     SET_SEED(state, res) {
         state.seed = res
         localStorage.setItem('SEED', res)
+    },
+    SET_NODES(state, res) {
+        state.nodes[res.key] = res.value
+        localStorage.setItem(res.key.toUpperCase(), JSON.stringify(res.value))
+    },
+    GET_NODES(state) {
+        let walletHost = localStorage.getItem('WALLETHOST')
+
+        state.nodes['walletHost'] = walletHost ? JSON.parse(walletHost) : ''
+        let host = localStorage.getItem('HOST')
+
+        state.nodes['host'] = host ? JSON.parse(host) : ''
     }
 }
 

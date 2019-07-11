@@ -7,7 +7,9 @@
                 <Avatar :src="item.avatar" />
             </div>
             <div class="desc">
-                <p class="name">{{ item.userName }}</p>
+                <p class="name"><span>{{ item.userName }}</span>
+                    <span v-if="item.permission===5||item.parentPermission===5"
+                          class="isNeedPay"></span></p>
                 <span class="time">{{ item.publishTime | date}}</span>
             </div>
             <div class="menuBtn cp FEED_MENU"
@@ -321,7 +323,7 @@ export default {
             })
         },
         isUrl(value) {
-            let reg = /(http:\/\/|https:\/\/)((\w|=|\?|\.*(:\d+)?|\/|&|-)+)/g
+            let reg = /^https?:\/\/((\w|=|\?|\.*(:\d+)?|\/|&|-)+)/g
             let str = value
             if (reg.test(value)) {
                 let url = value.match(reg)[0]
@@ -749,9 +751,21 @@ export default {
         padding: 10px 20px;
         display: flex;
         flex-wrap: nowrap;
-
         .desc {
             margin-right: 20px;
+            .name {
+                .text {
+                    display: inline-block;
+                }
+                .isNeedPay {
+                    display: inline-block;
+
+                    width: 18px;
+                    height: 12px;
+                    background: url('./img/paid@3x.png') no-repeat center;
+                    background-size: 100% 100%;
+                }
+            }
         }
         .menuBtn {
             position: absolute;

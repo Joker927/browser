@@ -21,7 +21,7 @@ import Loading from '@/components/Loading'
 import ImForward from '@/components/WebIM/Forward'
 export default {
     name: 'angel_explore',
-    components: { TheNav, TheTab, Loading, ImForward},
+    components: { TheNav, TheTab, Loading, ImForward },
     computed: {
         ...mapState({
             homeShow: state => state.Tabs.homeShow,
@@ -30,11 +30,13 @@ export default {
     },
     methods: {
         ...mapMutations([
+            'REFRESH_USER_INFO',
             'GET_USER_INFO',
             'SET_NAV_MENU_STATE',
             'SET_FEED_MENU_STATE',
             'SET_FEED_ACCESS_MENU_STATE',
-            'SET_EMOJI_STATE'
+            'SET_EMOJI_STATE',
+            'GET_NODES'
         ]),
         __cancel() {
             let className = event.target.className
@@ -55,6 +57,17 @@ export default {
         }
     },
     created() {
+        // this.api
+        //     .tokenLogin({ token: '7efb47676af340aaa9fb904daaf04633' })
+        //     .then(res => {
+        //         localStorage.setItem(
+        //             'TOKEN',
+        //             '7efb47676af340aaa9fb904daaf04633'
+        //         )
+        //         this.REFRESH_USER_INFO(res.data.userInfo)
+        //     })
+        this.GET_NODES()
+
         this.GET_USER_INFO()
     }
 }

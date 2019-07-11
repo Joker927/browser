@@ -31,8 +31,6 @@
 
 <script>
 import Title from '@/components/Cloud/Title'
-import Progress from '@/components/Cloud/Progress'
-import AutoSelect from '@/components/Cloud/AutoSelect'
 import CloudBuy from '@/components/Cloud/CloudBuy'
 import CloudSell from '@/components/Cloud/CloudSell'
 import CloudRecords from '@/components/Cloud/CloudRecords'
@@ -45,8 +43,6 @@ export default {
     },
     components: {
         Title,
-        Progress,
-        AutoSelect,
         CloudBuy,
         CloudSell,
         CloudRecords,

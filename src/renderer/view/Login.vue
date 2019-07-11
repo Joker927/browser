@@ -61,13 +61,21 @@
                     <div class="m-10">
 
                         <div class="input-title">{{$t('login.password')}}</div>
-                        <div class="pwd"><input :type="passwordType[0].status"
+                        <div class="pwd"><input autocomplete
+                                   :type="passwordType[0].status"
                                    v-model="loginForm.password" />
                             <span class="eye"
                                   @click="__watchPwd(0)"
                                   :class="{'active':passwordType[0].flag}"></span>
                         </div>
+                        <div class="checkbox ">
+                            <input type="checkbox"
+                                   v-model="rememberPass"><span @click="__changeRememberPass"
+                                  class="cp">{{$t('login.remember')}}</span>
+                        </div>
+                        <NodeSetting ></NodeSetting>
                     </div>
+
                     <div class="btns">
                         <button class="cp"
                                 @click="__forgetPwd">{{txt}}</button>
@@ -202,11 +210,18 @@
                 </p>
             </div>
         </div>
+        <ForgetPwd @inputPass='__inputPass'
+                   :visible.sync='forgetVisible'
+                   :accountNo='loginForm.accountNo'
+                   :type='loginForm.loginType'></ForgetPwd>
     </div>
 </template>
 
 <script>
 import { mapMutations, mapActions } from 'vuex'
+import ForgetPwd from '@/components/Login/ForgetPwd'
+import NodeSetting from '@/components/Login/NodeSetting'
+
 import createSeed from 'gitium.seed.js'
 import md5 from 'js-md5'
 export default {
@@ -215,6 +230,8 @@ export default {
             checked: true,
             selectShow: false,
             selectShow1: false,
+            forgetVisible: false, //找回密码
+            rememberPass: false,
             areaCodes: [],
             registerForm: {
                 accountNo: '', // 账号
@@ -261,7 +278,7 @@ export default {
             maskVisible: false
         }
     },
-    components: {},
+    components: { ForgetPwd, NodeSetting },
     computed: {
         isEmpty() {
             if (this.accountNo1.trim() !== '' && this.timer === null) {
@@ -335,7 +352,6 @@ export default {
             return res
         },
         async __regCode() {
-            console.log(this.defaultAreaCode, ' this.defaultAreaCode')
             let areaCode = this.defaultAreaCode.value.substr(1)
             let req = {}
             if (this.accountNo1.trim() == '') {
@@ -426,8 +442,9 @@ export default {
 
             this.SET_LOADING_STATE(true)
 
-            let areaCode = this.defaultAreaCode.value.substr(1)
             if (this.loginForm.loginType === '1') {
+                let areaCode = this.defaultAreaCode.value.substr(1)
+
                 this.loginForm.accountNo = '+' + areaCode + this.accountNo
             } else {
                 this.loginForm.accountNo = this.accountNo
@@ -438,6 +455,7 @@ export default {
                     seedRes.data.newAddressList[0]
                 this.api.login(this.loginForm).then(res => {
                     if (res.code == 0) {
+                        this.__savePass()
                         this.SET_USER_INFO(res.data).then(() => {
                             this.api
                                 .startListener({
@@ -457,6 +475,60 @@ export default {
                 })
             })
         },
+        //查找最新登录记住的帐号
+        __setPass() {
+            let userPass = localStorage.getItem('USERPASS')
+            if (typeof userPass === 'string') {
+                userPass = JSON.parse(userPass)
+                let tempArr = []
+
+                for (const key in userPass) {
+                    tempArr.push(userPass[key])
+                }
+                tempArr = tempArr.filter(item => item.isRemember)
+
+                tempArr.sort((a, b) => b.lastTime - a.lastTime)
+                if (tempArr[0]) {
+                    this.rememberPass = true
+                    this.accountNo = tempArr[0].accountNo
+
+                    this.loginForm.password = tempArr[0].password
+                    this.loginForm.loginType = tempArr[0].loginType
+                    if (this.loginForm.loginType === '1') {
+                        this.defaultAreaCode = tempArr[0].areaCode
+                    }
+                }
+            }
+        },
+
+        //存储用户密码到本地
+        __savePass() {
+            let userPass = localStorage.getItem('USERPASS')
+            if (typeof userPass === 'string') {
+                userPass = JSON.parse(userPass)
+            } else {
+                userPass = {}
+            }
+            let accountNo = this.loginForm.accountNo
+            if (!userPass[accountNo]) {
+                userPass[accountNo] = {}
+            }
+            if (this.loginForm.loginType === '1') {
+                userPass[accountNo]['areaCode'] = this.defaultAreaCode
+            }
+            userPass[accountNo]['loginType'] = this.loginForm.loginType
+
+            userPass[accountNo]['accountNo'] = this.accountNo
+            userPass[accountNo]['password'] = this.loginForm.password
+            userPass[accountNo]['isRemember'] = this.rememberPass
+            userPass[accountNo]['lastTime'] = new Date().getTime()
+
+            localStorage.setItem('USERPASS', JSON.stringify(userPass))
+        },
+        //填写密码到输入框
+        __inputPass(password) {
+            this.loginForm.password = password
+        },
         __selectVisible(s) {
             this[s] = !this[s]
         },
@@ -467,6 +539,8 @@ export default {
         __tab(v) {
             this.loginForm.loginType = v
             this.accountNo = ''
+            this.loginForm.password = ''
+            this.rememberPass = false
         },
         __tab1(v) {
             this.registerForm.registerType = v
@@ -475,6 +549,7 @@ export default {
         async __forgetPwd() {
             if (this.accountNo.trim() == '') {
                 this.tip = this.$t('login.toast3')
+                this.tipShow = true
             } else {
                 let areaCode = this.defaultAreaCode.value.substr(1)
                 if (this.loginForm.loginType === '1') {
@@ -488,13 +563,12 @@ export default {
                     }
                     this.loginForm.accountNo = this.accountNo
                 }
-                const res = await this.api.forgetPwd(this.loginForm)
-                this.$Toast(res.msg)
-                this.tip = this.$t('login.toast4')
-                this.__changeTxt('txt', this.$t('login.forgetPwd'))
-            }
+                // const res = await this.api.forgetPwd(this.loginForm)
 
-            this.tipShow = true
+                this.forgetVisible = true
+                // this.tip = this.$t('login.toast4')
+                // this.__changeTxt('txt', this.$t('login.forgetPwd'))
+            }
         },
         __changeTxt(str, text) {
             if (this.timer) return
@@ -510,6 +584,9 @@ export default {
         },
         __changeMaskVisible() {
             this.maskVisible = !this.maskVisible
+        },
+        __changeRememberPass() {
+            this.rememberPass = !this.rememberPass
         }
     },
     watch: {
@@ -521,6 +598,7 @@ export default {
     },
     created() {
         this.__getAreaCode()
+        this.__setPass()
     }
 }
 </script>
@@ -753,6 +831,14 @@ button {
     }
     .eye.active {
         opacity: 1;
+    }
+}
+.checkbox {
+    margin-top: 10px;
+    display: flex;
+    align-items: center;
+    > input {
+        width: 20px;
     }
 }
 .tip {

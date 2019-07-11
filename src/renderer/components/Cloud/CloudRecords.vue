@@ -44,7 +44,7 @@
                                         'cancel':item.status==90,
                                         'complete':item.status==99}">{{item.status|statusTxt( statusArr)}}</span>
 
-                        <span v-if="item.status!==30&&item.status!==90&&item.status!==40&&item.status!==41">
+                        <span v-if="item.status===0||item.status===10||item.status===20">
                             <span class="cancelBtn"
                                   @click="__showDialog(item.id,'dialogState')">{{$t('cloud.cancel')}}</span>
 

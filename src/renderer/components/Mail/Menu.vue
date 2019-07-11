@@ -64,6 +64,10 @@ export default {
             this.SET_MAIL_STATE()
         },
         __check(index, item) {
+            //如果在邮件编辑页面
+            if (this.editPanel) {
+                this.$bus.$emit('checkEmailState')
+            }
             this.active = index
             this.$emit('selected', item.class)
             if (item.class === 'all') {

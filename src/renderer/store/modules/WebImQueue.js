@@ -1,6 +1,16 @@
 const state = {
+  groupId: '', //群组详情ID
+  groupIdx: '', //群组index
+  groupAddShow: false, //群组添加成员显示
+  messageShow: false,
+  messageType: 1, //1为解散群组，2为移除成员
+  messageUserId: '', 
+  isOperationGroupState: false, //监听解散或者退出群组操作
+  GroupCodeShow: false, //群二维码
+  GroupCodeId: null, //群二维码ID
   mapState: false,
-  mapItem: {},
+  mapItem: '',
+  mapMsgToInfo: {}, //发送地址消息信息
   forwardShow: false,
   forwardItem: {},
   webIMList: [],
@@ -36,9 +46,36 @@ const state = {
 // }]
 
 const mutations = {
-  SET_MAP_STATE(state, res) {
+  SET_MESSAGEBOX_STATE (state, {type,id}) {
+    state.messageShow = !state.messageShow;
+    state.messageType = type;
+    state.messageUserId = id;
+  },
+  SET_GROUPADD_STATE (state, res) {
+    state.groupAddShow = !state.groupAddShow;
+  },
+  SET_GROUP_ID (state, {id,idx}) {
+    state.groupId = id;
+    state.groupIdx = idx;
+  },
+  SET_ISOPERATION_STATE(state, res) {
+    state.isOperationGroupState = !state.isOperationGroupState;
+  },
+  SET_GROUPCODE_STATE(state, res) {
+    console.log(res)
+    state.GroupCodeShow = !state.GroupCodeShow;
+    state.GroupCodeId = res;
+  },
+  SET_MAP_STATE(state, {
+    mapItem,
+    mapMsgToInfo
+  }) {
     state.mapState = !state.mapState;
-    state.mapItem = res;
+    state.mapItem = mapItem;
+    state.mapMsgToInfo = mapMsgToInfo;
+  },
+  EXIT_IMFORWARD() {
+    state.forwardShow = false;
   },
   SET_IMFORWARD_STATE(state, res) {
     state.forwardShow = !state.forwardShow;
@@ -135,7 +172,7 @@ const mutations = {
   }) {
     state.webIMList[opeIdx].msgList.splice(msgIdx, 1);
   },
-  CLEAR_MSG_LIST(state,index) {
+  CLEAR_MSG_LIST(state, index) {
     state.webIMList[index].msgList = [];
   }
 }

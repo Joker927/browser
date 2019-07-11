@@ -160,17 +160,40 @@ export default {
             this.currencyList = res.data;
             this.__calcRate();
         },
+        // async __calcRate() {
+        //     this.currencyList.forEach(val => {
+        //         if (this.selectC1.symbol == val.symbol) {
+        //             this.chargeCurrentGitInfo = val;
+        //         }
+        //     })
+        //     const res = await this.api.seedGetRechargeRate({
+        //         srcCurrencies: [this.selectC2.address],
+        //         destCurrency: this.chargeCurrentGitInfo.address
+        //     });
+
+        //     this.rate = 1/(res.data[this.selectC2.address] * Math.pow(10, this.selectC2.decimals-this.chargeCurrentGitInfo.decimals));
+        //     this.__calcInput2Val();
+        // },
         async __calcRate() {
             this.currencyList.forEach(val => {
                 if (this.selectC1.symbol == val.symbol) {
                     this.chargeCurrentGitInfo = val;
+                    console.log(val)
                 }
             })
-            const res = await this.api.seedGetRechargeRate({
-                srcCurrencies: [this.selectC2.address],
-                destCurrency: this.chargeCurrentGitInfo.address
-            });
-            this.rate = 1/(res.data[this.selectC2.address] * Math.pow(10, this.selectC2.decimals-this.chargeCurrentGitInfo.decimals));
+            let params = {
+                fromCurrencies: [{
+                    address: this.chargeCurrentGitInfo.address,
+                    decimals: this.chargeCurrentGitInfo.decimals
+                }],
+                toCurrency: {
+                    address: this.selectC2.address,
+                    decimals: this.selectC2.decimals
+                }
+            }
+            console.log(params)
+            const res = await this.api.seedGetRechargeRate2(params);
+            this.rate = res.data[this.chargeCurrentGitInfo.address];
             this.__calcInput2Val();
         },
         __calcInput2Val() {
@@ -190,8 +213,8 @@ export default {
                 addressList: this.addressList,
                 userPayAddress: this.inputPaymentAddress,
                 currency: this.selectC2.name,
-                chargeValue: this.input2,
-                value: this.input1,
+                chargeValue: Number(this.input1),
+                value: this.input2,
                 phone: this.inputTel,
                 useCurrency: this.selectC1.name
             };

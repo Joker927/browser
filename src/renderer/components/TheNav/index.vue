@@ -89,14 +89,29 @@
 
 <script>
 import { mapState, mapMutations, mapActions } from 'vuex'
-
+import axios from 'axios'
 import Requests from './Requests'
 import Question from './Question'
 import Setting from './Setting'
 import Dynamic from './Dynamic'
 import Wallet from './Wallet'
 import Badge from '@/commom/Badge'
-import { fail } from 'assert'
+
+const verifyURL = url => {
+    return new Promise((resolve, reject) => {
+        axios({
+            method: 'OPTIONS',
+            url,
+            responseType: 'document'
+        })
+            .then(data => {
+                resolve(data)
+            })
+            .catch(error => {
+                reject(error.toString())
+            })
+    })
+}
 export default {
     data() {
         return {
@@ -260,29 +275,35 @@ export default {
 
         //是否输入了http头
         __hasPrefix(str) {
-            if (!str.includes('https://') && !str.includes('http://')) {
+            if (str.indexOf('https://') !== 0 && str.indexOf('http://') !== 0) {
                 str = 'http://' + str
             }
             return str
         },
-        __goAddress() {
+        async __goAddress() {
             let address = this.__hasPrefix(this.address)
-
-            if (this.tabIdx !== -1) {
-                console.log(this.tabIdx, 'address')
-                let o = {
-                    index: this.tabIdx,
-                    key: 'url',
-                    value: address
-                }
-                this.SET_TAB_ATTR(o)
+            const res = await verifyURL(address)
+            if (res == undefined) {
+                this.$router.push({
+                    name: 'search',
+                    query: { q: this.address }
+                })
             } else {
-                var obj = {
-                    isShow: true,
-                    title: this.$t('nav.newTab'),
-                    url: address
+                if (this.tabIdx !== -1) {
+                    let o = {
+                        index: this.tabIdx,
+                        key: 'url',
+                        value: address
+                    }
+                    this.SET_TAB_ATTR(o)
+                } else {
+                    var obj = {
+                        isShow: true,
+                        title: this.$t('nav.newTab'),
+                        url: address
+                    }
+                    this.ADD_TABS(obj)
                 }
-                this.ADD_TABS(obj)
             }
         },
         async __addCollect() {

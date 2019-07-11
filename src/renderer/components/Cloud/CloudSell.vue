@@ -144,6 +144,12 @@
                     <span class="cp"
                           @click="__out">{{$t('cancel')}}</span>
                 </div>
+                <div class="tips">
+                    <input type="checkbox"
+                           v-model="isOnce">
+                    <span class="cp"
+                          @click="__toggle">{{$t('cloud.tip6')}}</span>
+                </div>
             </div>
 
         </div>
@@ -171,7 +177,8 @@ export default {
             },
             amount: 0,
             order: {},
-            dialogState: false
+            dialogState: false,
+            isOnce: JSON.parse(localStorage.getItem('ISONCE')) || false
         }
     },
     components: {},
@@ -189,6 +196,9 @@ export default {
     methods: {
         ...mapMutations(['SET_LOADING_STATE']),
 
+        __toggle() {
+            this.isOnce = !this.isOnce
+        },
         async __updateCloudStorage() {
             // currency	string
             // 币种 默认=GIT
@@ -204,6 +214,10 @@ export default {
             // 空间大小类型 mb,gb,tb
             // type	integer($int32)
             // 服务类型 1=1个月，2=2个月，3=3个月，4=半年，5=1年
+
+            //设置是否再次弹窗
+            localStorage.setItem('ISONCE', this.isOnce)
+
             this.__out()
             let verifyKey = ['size', 'price', 'netSpeed', 'ipfsServer']
 
@@ -216,7 +230,7 @@ export default {
             })
 
             if (flag) {
-                this.$Toast('请输入必填内容')
+                this.$Toast(this.$t('cloud.tip7'))
                 return
             }
             this.__createOrder()
@@ -254,7 +268,7 @@ export default {
             let total = await this.__getMuchCurrenty(contractAddress)
             console.log(total, '0')
             if (this.amount > total) {
-                this.$Toast('余额不足')
+                this.$Toast(this.$t('cloud.tip8'))
                 this.SET_LOADING_STATE(false)
                 return
             }
@@ -345,7 +359,12 @@ export default {
         },
 
         async __confirm() {
-            this.dialogState = true
+            this.isOnce = JSON.parse(localStorage.getItem('ISONCE'))
+            if (this.isOnce) {
+                this.__updateCloudStorage()
+            } else {
+                this.dialogState = true
+            }
         },
         __out() {
             this.dialogState = false
@@ -536,7 +555,7 @@ input[type='number']::-webkit-inner-spin-button {
         position: absolute;
         left: 50%;
         top: 55%;
-        width: 200px;
+        width: 260px;
         transform: translate(-50%, -50%);
         text-align: center;
         background: #ffffff;
@@ -546,6 +565,8 @@ input[type='number']::-webkit-inner-spin-button {
             border-bottom: 1px solid rgba(0, 0, 0, 0.1);
         }
         .btn {
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+
             display: flex;
             justify-content: space-around;
             align-items: center;
@@ -561,6 +582,14 @@ input[type='number']::-webkit-inner-spin-button {
             > :nth-of-type(1) {
                 // background: #000;
                 border-right: 1px solid rgba(0, 0, 0, 0.1);
+            }
+        }
+        .tips {
+            padding: 10px;
+            text-align: left;
+            > span {
+                margin-left: 6px;
+                color: #3e3a39;
             }
         }
     }

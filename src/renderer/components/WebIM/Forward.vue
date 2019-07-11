@@ -10,12 +10,13 @@
                 <div class="bl fl">
                     <div class="search-f">
                         <input type="text" @focus="foucus" :placeholder="$t('group.placeholder1')" v-model="searchVal" />
-                        <span class="search-icon" :class="{'focusIcon':focusIcon}"></span>
+                        <span class="search-icon" :class="{'focusIcon':focusIcon}" @click="__searchF"></span>
                     </div>
                     <div class="f-list">
                         <div v-for="(item,index) in list" :key="index" class="clearfix" @click="__sendIM(item)">
                             <div>
                                 <img :src="item.avatar" v-if="item.avatar" />
+                                <img :src="item.image" v-else-if="item.image" />
                                 <img src="./img/icon.png" v-else />
                             </div>
                             <div>
@@ -30,16 +31,16 @@
 </template>
 
 <script>
-import { mapState, mapMutations } from "vuex";
+import { mapState, mapMutations } from 'vuex'
 export default {
     data() {
         return {
             list: [],
-            searchName: "",
-            searchVal: "",
+            searchName: '',
+            searchVal: '',
             focusIcon: false,
-            selectFList: []
-        };
+            memberList: [], //存着原始的成员列表
+        }
     },
     computed: {
         ...mapState({
@@ -50,70 +51,92 @@ export default {
         })
     },
     mounted() {
-        this.__getList();
-        console.log(this.forwardItem);
+        this.__getList()
+        console.log(this.forwardItem)
     },
     methods: {
-        ...mapMutations(["SET_IMFORWARD_STATE", "SET_WEBIM_List", "SET_MSG_List"]),
+        ...mapMutations([
+            'SET_IMFORWARD_STATE',
+            'SET_WEBIM_List',
+            'SET_MSG_List',
+            'EXIT_IMFORWARD'
+        ]),
         __out() {
-            this.SET_IMFORWARD_STATE();
+            this.EXIT_IMFORWARD()
         },
         foucus() {
-            this.focusIcon = true;
+            this.focusIcon = true
+        },
+        __searchF() {
+            if (!this.searchVal) {
+                this.list = this.memberList;
+                return;
+            }
+            var arr = [];
+            this.list.forEach(val => {
+                console.log(val)
+                if (val.groupName && val.groupName.indexOf(this.searchVal) >= 0) {
+                    arr.push(val);
+                } else if (val.nickname && val.nickname.indexOf(this.searchVal) >= 0) {
+                    arr.push(val);
+                }
+            });
+            this.list = arr;
         },
         async __getList() {
             const res = await this.api.searchFriendAndGroup({
                 searchName: this.searchName
-            });
+            })
             this.list = res.data.containFriendGroupList.concat(
                 res.data.friendList
-            );
+            )
+            Object.assign(this.memberList, this.list);
         },
         async __sendIM(item) {
             //遍历当前展示聊天界面,确认转发路径
-            let equalIdx = 0;
+            let equalIdx = 0
             let flag = this.webIMList.some((val, index) => {
                 if (val.groupId) {
-                    if (val.groupId == item.groupId) equalIdx=index;
-                    return val.groupId == item.groupId;
+                    if (val.groupId == item.groupId) equalIdx = index
+                    return val.groupId == item.groupId
                 } else {
-                    if (val.userId == item.friendId) equalIdx=index;
-                    return val.userId == item.friendId;
+                    if (val.userId == item.friendId) equalIdx = index
+                    return val.userId == item.friendId
                 }
-            });
+            })
 
-            let obj = {};
+            let obj = {}
             //每条msg添加userName和avatar,保证群聊消息展示正确
             let message = {
                 type: 0,
-                messageType: 1,
+                messageType: this.forwardItem.messageType,
                 userName: item.nickname,
                 avatar: item.avatar,
                 msg: this.forwardItem.msg
-            };
+            }
 
-            if ("groupId" in item) {
+            if ('groupId' in item) {
                 obj = {
                     groupId: item.groupId,
                     userName: item.groupName,
                     avatar: item.image,
-                    type: "group",
+                    type: 'group',
                     isShow: true,
-                    width: "210px",
-                    height: "168px",
+                    width: '210px',
+                    height: '168px',
                     msgList: [message]
-                };
+                }
             } else {
                 obj = {
                     userId: item.friendId,
                     userName: item.nickname,
                     avatar: item.avatar,
-                    type: "personal",
+                    type: 'personal',
                     isShow: true,
-                    width: "210px",
-                    height: "168px",
+                    width: '210px',
+                    height: '168px',
                     msgList: [message]
-                };
+                }
             }
 
             //使用mutations维护vuex,state
@@ -123,30 +146,31 @@ export default {
                 this.SET_MSG_List({
                     index: equalIdx,
                     msg: message
-                });
+                })
             } else {
-                this.SET_WEBIM_List(obj);
+                this.SET_WEBIM_List(obj)
             }
+
+            this.EXIT_IMFORWARD();
 
             let para = {
                 body: this.forwardItem.msg,
                 fromUserId: this.userInfo.userId,
                 messageType: 1,
                 time: 0,
-                toUserId: obj.userId||obj.groupId, //群聊取groupId,个人取userId
-                type: "chat"
-            };
-            if (!item.groupId) {
-                const res = await this.api.sendMessage(para);
-            } else {
-                para.type = "groupchat";
-                const res = await this.api.sendGroupMessage(para);
+                toUserId: obj.userId || obj.groupId, //群聊取groupId,个人取userId
+                type: 'chat'
             }
-            this.__out();
+            if (!item.groupId) {
+                const res = await this.api.sendMessage(para)
+            } else {
+                para.type = 'groupchat'
+                const res = await this.api.sendGroupMessage(para)
+            }
         }
     },
     watch: {}
-};
+}
 </script>
 
 <style lang='scss' scoped>
@@ -203,7 +227,6 @@ input {
 .bl {
     padding-top: 20px;
     border-right: 1px solid #dfdfe0;
-    overflow-y: scroll;
 }
 
 .bl::-webkit-scrollbar {
@@ -247,6 +270,8 @@ input {
 .f-list {
     width: 254px;
     margin: 20px auto 0;
+    overflow-y: scroll;
+    height: 420px;
     > div {
         width: 100%;
         height: 30px;
@@ -259,7 +284,8 @@ input {
             width: 30px;
             height: 30px;
             img {
-                width: 100%;
+                width: 30px;
+                height: 30px;
                 border-radius: 50%;
             }
         }

@@ -47,7 +47,17 @@ export default {
             '我們竭盡所能想要提供最理想的產品，並為所有用戶制訂明確的使用規範。然而，我們的系統係「依現狀提供」，我們不保證任何時候均為安全、可靠及運作正常，亦不保證在執行時不會有中斷、延遲或故障的情形發生。在法律允許的範圍內，我們亦明確聲明不負任何明示或默示之擔保責任，其中包括適銷性、特定用途的適用性、所有權及非侵權等擔保。我們無法控制或指示其他用戶的言行，因此我們對用戶的動作或行為（無論線上或離線）及他們分享的任何內容（包括有冒犯性、言詞不當、猥褻、違法和其他令人反感的內容）概不負任何責任。',
             '我們無法預測系統何時會發生問題，因此，我們應承擔的責任以適用法律所允許的最大範圍為限。此外，在任何情況下，我們對於您的任何利益、收入、資訊及資料損失，以及因本條款或 Gitium所引起或與之相關的連帶、特殊、間接、懲罰性、懲戒性或偶發性損害，均不負任何責任，即使在我們已得知可能發生此等損害的情況下亦然。'
         ],
-        passwordNoAlike: '兩次輸入密碼不一致'
+        passwordNoAlike: '兩次輸入密碼不一致',
+        sendCode: '發送驗證碼',
+        inputCode: '輸入驗證碼',
+        findBack: '找回密碼',
+        toast8: '此帳號未在本機器登入過,不能找回密碼.',
+        remember: '記住密碼',
+        host: {
+            host: '主机',
+            title: '编辑节点配置',
+            selectHost: '选择主机'
+        }
     },
     collect: {
         collect: '收藏',
@@ -241,7 +251,8 @@ export default {
         confirmTxt: '確認刪除?',
         setPriceFlag: '请先设置作品收费方式',
         refresh: '載入更多',
-        success: '載入成功'
+        success: '載入成功',
+        loadMore: ['加載了', '條動態', '更新了', '刷新查看']
     },
     side: {
         createagroup: '創建群組',
@@ -276,7 +287,8 @@ export default {
         wallet: '錢包',
         personalWorks: '個人作品設定',
         giveSet: '打賞設置',
-        bill: '帳單記錄'
+        bill: '帳單記錄',
+        moneyCode: '我的付款碼'
     },
     tab: {
         home: '主頁'
@@ -404,7 +416,19 @@ export default {
         redExpalin: '給你發了一個紅包',
         reded: '紅包已领取',
         open: '開',
-        SuccessfulTrade: '交易成功'
+        SuccessfulTrade: '交易成功',
+        change: '更改',
+        groupHeadImg: '群头像',
+        groupName: '群名称',
+        delete: '移除',
+        grouper: '群主',
+        ungroup: '解散群组',
+        exitGroup: '退出群组',
+        lookGroupDetail: '查看群组详情',
+        downloadQRCode: '下载二维码',
+        setAmount: '设定金额',
+        payObj: '支付对象',
+        copyAddress: '复制收款地址'
     },
     cloud: {
         buyTitle: '空間購買',
@@ -470,6 +494,10 @@ export default {
         tip3: '你確定要這麼做嗎?',
         tip4: '請先安裝IPFS服務端',
         tip5: '已安裝',
+        tip6: '已安装，不再提醒',
+        tip7: '請輸入必填內容',
+        tip8: '餘額不足',
+
         sellTitle1: '分享空間',
         sellTitle2: '租賃定價',
         tip2: ['需支付', '保證金(25%)', ',方案結束自動退回保證金'],

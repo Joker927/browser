@@ -1,22 +1,56 @@
 <template>
     <div>
-        <!-- <div class="title">
-            <div>
-                <input type="file" id="file" @change="__uploadFile" />
-                <span class="icon"></span>
-                <p>上传</p>
-            </div>
-            <div @click="__createFolder">
-                <span class="icon icon1"></span>
-                <p>新建文件夹</p>
-            </div>
-        </div> -->
-
         <div class="fileList">
             <div v-for="(item,index) in fileList" :key="index" class="fileList-item">
                 <div></div>
                 <div v-if="!item.isInputName" @click="__selectUpdateName(item)">{{item.fileName}}</div>
                 <input type="text" :value="item.fileName" @blur="__updateName(item)" v-else/>
+                 <div class="delete" v-if="opaIdx==index">
+                    <div @click="__open(item)">打开</div>
+                    <div class="border"></div>
+                    <div @click="__downloadFile(item)">下载</div>
+                    <div @click="__delete(item)">删除</div>
+                    <div class="border"></div>
+                    <div @click="__selectUpdateName(item)">重命名</div>
+                    <div @click="__showProperty(item,index)">属性</div>
+                </div>
+                <div class="property" v-if="propertyIdx==index">
+                    <div class="title">
+                        属性
+                        <span class="exit" @click="propertyIdx=99"></span>
+                    </div>
+                    <div class="content">
+                        <div class="content-img clearfix">
+                            <div v-if="item.fileType==0" class="file"></div>
+                            <div v-if="item.fileType==3" class="img"></div>
+                            <div v-if="item.fileType==4&&item.mime=='pdf'" class="pdf"></div>
+                            <div v-if="item.fileType==4&&item.mime=='txt'" class="txt"></div>
+                            <div v-if="item.fileType==5&&item.mime=='zip'" class="zip"></div>
+                            <div v-if="item.fileType==4&&item.mime=='war'" class="war"></div>
+                            <div v-if="item.fileType==4&&item.mime=='tar'" class="tar"></div>
+                            <div v-if="item.fileType==4&&item.mime=='exe'" class="exe"></div>
+                            <div v-if="item.fileType==4&&item.mime=='rar'" class="rar"></div>
+                            <div v-if="item.fileType==4&&(item.mime=='doc'||item.mime=='docx')" class="doc"></div>
+                            <div v-if="item.fileType==4&&item.mime=='pptx'" class="ppt"></div>
+                            <div v-if="item.fileType==4&&(item.mime=='xls'||item.mime=='xlsx')" class="excel"></div>
+                            <div>{{item.fileName}}</div>
+                        </div>
+                        <div class="content-info">
+                            <div>
+                                <span>类型：</span>{{item.mime}}
+                            </div>
+                            <div>
+                                <span>位置：</span>{{item.location}}
+                            </div>
+                            <div>
+                                <span>大小：</span>{{item.size}}
+                            </div>
+                            <div>
+                                <span>上传日期：</span>{{item.updateDate}}
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -116,25 +150,203 @@ export default {
 }
 .fileList {
     display: flex;
-    &-item {
+    flex-wrap: wrap;
+    .upload {
         width: 118px;
-        overflow: hidden;
+        height: 104px;
         margin-top: 20px;
         margin-left: 12px;
-        > div:first-child {
+        position: relative;
+        background: url("./img/group_addPic@3x.png") no-repeat center 0px;
+        background-size: 61px 61px;
+        input[type="file"] {
+            position: absolute;
+            width: 118px;
+            height: 94px;
+            opacity: 0;
+        }
+        div {
+            position: absolute;
+            bottom: 16px;
+            text-align: center;
+            width: 100%;
+        }
+    }
+    &-item {
+        width: 118px;
+        margin-top: 20px;
+        margin-left: 12px;
+        position: relative;
+        .file {
             width: 65px;
             height: 61px;
             background: url(./img/folder.png);
             background-size: 100% 100%;
             margin: 0 auto;
         }
+        .pdf {
+            width: 61px;
+            height: 61px;
+            background: url(./img/WechatIMG1144.png);
+            background-size: 100% 100%;
+            margin: 0 auto;
+        }
+        .doc {
+            width: 61px;
+            height: 61px;
+            background: url(./img/word.png);
+            background-size: 100% 100%;
+            margin: 0 auto;
+        }
+        .ppt {
+            width: 61px;
+            height: 61px;
+            background: url(./img/ppt.png);
+            background-size: 100% 100%;
+            margin: 0 auto;
+        }
+        .txt {
+            width: 61px;
+            height: 61px;
+            background: url(./img/TXT.png);
+            background-size: 100% 100%;
+            margin: 0 auto;
+        }
+        .zip {
+            width: 61px;
+            height: 61px;
+            background: url(./img/zip.png);
+            background-size: 100% 100%;
+            margin: 0 auto;
+        }
+        .war {
+            width: 61px;
+            height: 61px;
+            background: url(./img/war.png);
+            background-size: 100% 100%;
+            margin: 0 auto;
+        }
+        .tar {
+            width: 61px;
+            height: 61px;
+            background: url(./img/tar.png);
+            background-size: 100% 100%;
+            margin: 0 auto;
+        }
+        .exe {
+            width: 61px;
+            height: 61px;
+            background: url(./img/exe.png);
+            background-size: 100% 100%;
+            margin: 0 auto;
+        }
+        .rar {
+            width: 61px;
+            height: 61px;
+            background: url(./img/rar.png);
+            background-size: 100% 100%;
+            margin: 0 auto;
+        }
+        .excel {
+            width: 61px;
+            height: 61px;
+            background: url(./img/excel.png);
+            background-size: 100% 100%;
+            margin: 0 auto;
+        }
+        .img {
+            width: 51px;
+            height: 42px;
+            background: url(./img/home_edit_film@3x.png);
+            background-size: 100% 100%;
+            margin: 14px auto;
+        }
         > div:nth-child(2) {
             margin-top: 10px;
             text-align: center;
+            overflow: hidden;
         }
-        >input{
+        > input {
             margin-top: 10px;
             width: 118px;
+        }
+    }
+}
+.exit {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 12px;
+    height: 12px;
+    background: #fff url("./img/popup_cancel@3x.png");
+    background-size: 100% 100%;
+}
+.delete {
+    position: absolute;
+    background: #ffffff;
+    width: 196px;
+    top: 35px;
+    left: 59px;
+    z-index: 1;
+    box-shadow: 1px 1px #ededed;
+    > div:not(.border) {
+        height: 32px;
+        line-height: 32px;
+        text-indent: 2em;
+        margin: 10px 0;
+    }
+    > div:hover {
+        background: #ecf0f7;
+    }
+    .border {
+        border-bottom: 1px solid #e8eaed;
+    }
+}
+.property {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 522px;
+    height: 300px;
+    color: #333;
+    border: 1px solid #e2e2e3;
+    .title {
+        height: 32px;
+        line-height: 32px;
+        background: #f3f3f3;
+        text-indent: 2em;
+        font-size: 14px;
+        border-bottom: 1px solid #e2e2e3;
+    }
+    .content {
+        width: 496px;
+        margin: 12px auto;
+        border: 1px solid #e2e2e3;
+        height: 240px;
+        padding: 18px;
+        &-img {
+            border-bottom: 1px solid #e2e2e3;
+            padding-bottom: 14px;
+            > div:nth-of-type(1) {
+                float: left;
+                width: 34px;
+                height: 34px;
+            }
+            > div:nth-of-type(2) {
+                line-height: 34px;
+                margin-left: 44px;
+                font-weight: 600;
+            }
+        }
+        &-info {
+            > div {
+                margin-top: 20px;
+                margin-left: 10px;
+                > span {
+                    color: #666;
+                }
+            }
         }
     }
 }

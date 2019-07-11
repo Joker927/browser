@@ -3,7 +3,8 @@ import * as api from '@/api'
 const delay = 180000
 const timer = {
     requestsTimer: null,
-    dynamicTimer: null
+    dynamicTimer: null,
+    newFeedTimer: null
 }
 const state = {
     requestsCount: 0,
@@ -68,6 +69,22 @@ const actions = {
         fn(reqs)
         timer.dynamicTimer = setInterval(() => {
             fn(reqs)
+        }, delay)
+    },
+    SET_FEED_NEW_COUNT({ commit }, data) {
+        const fn = reqs => {
+            api.newDynamicCount(reqs).then(res => {
+                if (res.code === 0) {
+                    if (res.data >= 0) {
+                        commit('SET_FEED_NEW_COUNT', res.data)
+                    }
+                } else {
+                    clearInterval(timer.newFeedTimer)
+                }
+            })
+        }
+        timer.newFeedTimer = setInterval(() => {
+            fn(data)
         }, delay)
     }
 }

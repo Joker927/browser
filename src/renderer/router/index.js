@@ -191,7 +191,13 @@ export default new Router({
                             name: 'Recharge',
                             component: require('@/components/Wallet/Recharge')
                                 .default
-                        }
+                        },
+                        // {
+                        //     path: '/myMoneyCode',
+                        //     name: 'myMoneyCode',
+                        //     component: require('@/components/Wallet/MyMoneyCode')
+                        //         .default
+                        // },
                     ]
                 }
             ]

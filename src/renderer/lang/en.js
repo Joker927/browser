@@ -49,7 +49,18 @@ export default {
             'We work hard to provide the best system we can and to specify clear guidelines for everyone who uses them. Our system, however, are provided "as is," and we make no guarantees that they always will be safe, secure, or error-free, or that they will function without disruptions, delays, or imperfections. To the extent permitted by law, we also DISCLAIM ALL WARRANTIES, WHETHER EXPRESS OR IMPLIED, INCLUDING THE IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, TITLE, AND NON-INFRINGEMENT. We do not control or direct what people and others do or say, and we are not responsible for their actions or conduct (whether online or offline) or any content they share (including offensive, inappropriate, obscene, unlawful, and other objectionable content).',
             'We cannot predict when issues might arise with our system. Accordingly, our liability shall be limited to the fullest extent permitted by applicable law, and under no circumstance will we be liable to you for any lost profits, revenues, information, or data, or consequential, special, indirect, exemplary, punitive, or incidental damages arising out of or related to these Terms or the Gitium system, even if we have been advised of the possibility of such damages.'
         ],
-        passwordNoAlike: 'Two inconsistent passwords'
+        passwordNoAlike: 'Two inconsistent passwords',
+        sendCode: 'Send verification code',
+        inputCode: 'Input verification code',
+        findBack: 'Retrieve password',
+        toast8:
+            'This account has not been logged in on this machine, can not retrieve the password.',
+        remember: 'Remember password',
+        host: {
+            host: 'Host',
+            title: 'Node configuration',
+            selectHost: 'Select the host'
+        }
     },
     collect: {
         collect: 'Favorites',
@@ -244,7 +255,8 @@ export default {
 
         setPriceFlag: 'Please set the charging method first.',
         refresh: 'Load more',
-        success: 'Load successful'
+        success: 'Load successful',
+        loadMore: ['Loaded', 'Stripe Dynamic', 'Updated', 'Refresh View']
     },
     side: {
         createagroup: 'Create a group',
@@ -283,7 +295,8 @@ export default {
         wallet: 'wallet',
         personalWorks: 'Personal work Set',
         giveSet: 'Reward settings',
-        bill: 'Billing Records '
+        bill: 'Billing Records ',
+        moneyCode: 'My collection code'
     },
     tab: {
         home: 'Home '
@@ -428,7 +441,19 @@ export default {
         redExpalin: 'A red envelope was sent to you.',
         reded: 'The red envelope has get',
         open: 'open',
-        SuccessfulTrade: 'Successful trade'
+        SuccessfulTrade: 'Successful trade',
+        change: 'change',
+        groupHeadImg: 'Group heads',
+        groupName: 'Group Name',
+        delete: 'remove',
+        grouper: 'Group owner',
+        ungroup: 'ungroup',
+        exitGroup: 'Exit group',
+        lookGroupDetail: 'View Group Details',
+        downloadQRCode: 'Download QR code',
+        setAmount: 'Set amount',
+        payObj: 'Object of payment',
+        copyAddress: 'Copy Address'
     },
     cloud: {
         buyTitle: 'Space purchase',
@@ -492,6 +517,9 @@ export default {
         tip3: 'Are you sure you want to do this? ',
         tip4: 'Please install the IPFS server first',
         tip5: 'Is installed',
+        tip6: 'Installed, no longer reminded',
+        tip7: 'Please enter the required content',
+        tip8: 'Insufficient balance',
         sellTitle1: 'Sharing space',
         sellTitle2: 'Lease pricing',
         tip2: ['', 'Margin (25%)', ',Automatic return due'],

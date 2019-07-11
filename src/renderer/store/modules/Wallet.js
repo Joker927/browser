@@ -15,11 +15,21 @@ const state = {
   dealInfo: {},
   addPropertyShow: false, //添加资产显示隐藏
   CNYRechargeShow: false, //CNY充值二维码显示隐藏
+  MyMoneyCodeShow: false, //我的付款码
+  TransferShow: false, //转账
   CNYInfo: {},
   propertyList: JSON.parse(localStorage.getItem('PROPERTYLIST')) || arr,
 }
 
 const mutations = {
+  //设置转账隐藏
+  SET_TRANSFER_STATE(state, res) {
+    state.TransferShow = !state.TransferShow;
+  },
+  //设置我的付款码隐藏
+  SET_MONEYCODE_STATE(state, res) {
+    state.MyMoneyCodeShow = !state.MyMoneyCodeShow;
+  },
   //设置交易信息显示隐藏
   SET_DEAL_STATE(state, res) {
     state.dealState = !state.dealState;

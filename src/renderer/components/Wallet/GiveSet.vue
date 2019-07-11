@@ -9,7 +9,7 @@
         <div class="list">
             <div v-for="(item,index) in list" :key="index" class="clearfix">
                 <div class="fl">{{item.rewardTime}}</div>
-                <div class="fl" v-if="optAc==0">{{item.authorName}}{{$t('wallet.forYou')}}</div>
+                <div class="fl" v-if="optAc==0">{{item.userName}}{{$t('wallet.forYou')}}</div>
                 <div class="fl" v-else>{{$t('wallet.youFor')}}{{item.authorName}}{{$t('main.reward')}}</div>
                 <div class="fr">{{item.rewardAmount}}{{item.currency}}</div>
             </div>
@@ -22,7 +22,7 @@ import { mapState, mapMutations } from "vuex";
 export default {
     data() {
         return {
-            opt: ["收到", "发出"],
+            opt: [this.$t('wallet.opt2'),this.$t('wallet.opt3')],
             optAc: 0,
             list: []
         };

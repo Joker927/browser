@@ -84,13 +84,21 @@ export default {
         ...mapState({
             userInfo: state => state.UserInfo.userInfo,
             webIMList: state => state.WebImQueue.webIMList,
-            chatRecords: state => state.WebImQueue.chatRecords
+            chatRecords: state => state.WebImQueue.chatRecords,
+            isOperationGroupState: state => state.WebImQueue.isOperationGroupState
         })
     },
     watch: {
         chatRecords: {
             handler(newVal,old) {
                 console.log(newVal)
+            },
+            immediate: true,
+            deep:true
+        },
+        isOperationGroupState: {
+            handler(newVal,old) {
+                this.__getGroupList();
             },
             immediate: true,
             deep:true

@@ -33,13 +33,16 @@ const state = {
     random: 0, //多次点击弹出窗口
     zIndex: 1000,
     previewState: false,
-    previewImgInfo: ''//预览图片信息
+    previewImgInfo: '', //预览图片信息,
+    count: 0,
+    toastVisible: false,
+    toastVisible1: false
 }
 
 const mutations = {
-    SET_PREVIEWIMG_STATE(state,res) {
-        state.previewState = !state.previewState;
-        if (res) state.previewImgInfo = res;
+    SET_PREVIEWIMG_STATE(state, res) {
+        state.previewState = !state.previewState
+        if (res) state.previewImgInfo = res
     },
     SET_FEED_MENU_STATE(state, res) {
         if (res && state.menuState === res) {
@@ -105,15 +108,18 @@ const mutations = {
     },
     SET_FEED_ZINDEX(state, res) {
         state.zIndex++
+    },
+    SET_FEED_COUNT(state, res) {
+        state.count = res
+        state.toastVisible = !state.toastVisible
+    },
+    SET_FEED_NEW_COUNT(state, res) {
+        state.count = res
+        state.toastVisible1 = !state.toastVisible1
     }
 }
 
-const actions = {
-    someAsyncTask({ commit }) {
-        // do something async
-        commit('INCREMENT_MAIN_COUNTER')
-    }
-}
+const actions = {}
 
 export default {
     state,

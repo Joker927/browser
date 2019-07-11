@@ -32,6 +32,7 @@
         <div v-if="$route.name==='user'"
              class="opt">
             <div class="msg cp"
+                 v-if="datas.isFriend==='1'"
                  @click='__chat'>{{$t('main.sendMsg')}}</div>
             <div class="add cp"
                  v-if="datas.isFriend==='0'"
@@ -53,6 +54,21 @@
                ref="UpFile"
                @change="__upload"
                style="display:none">
+        <div class="mask"
+             v-if="dialogState"
+             @click.self="__dialogCancel">
+            <div class="details">
+                <p class="title">是否确定删除?</p>
+                <div class="btn">
+                    <span class="cp"
+                          @click="__dialogConfirm">{{$t('confirm')}}</span>
+                    <span class="cp"
+                          @click="__dialogCancel">{{$t('cancel')}}</span>
+                </div>
+            </div>
+
+        </div>
+
     </div>
 </template>
    
@@ -66,7 +82,8 @@ export default {
         return {
             datas: {},
             menuShow: false,
-            type: 'avatar'
+            type: 'avatar',
+            dialogState: false
         }
     },
     components: {},
@@ -93,7 +110,6 @@ export default {
             }
         },
         async __add() {
-            console.log(this.datas)
             let data = {
                 requesterId: this.datas.userId
             }
@@ -106,15 +122,23 @@ export default {
         __opt() {
             this.menuShow = !this.menuShow
         },
-        async __del() {
+        __del() {
+            this.dialogState = true
+        },
+        async __dialogConfirm() {
             let data = {
                 ids: [this.datas.userId]
             }
             const res = await this.api.friendDelete(data)
             if (res.msg == 'success') {
+                this.__dialogCancel()
                 this.__getDatas()
+                this.$bus.emit('getData')
                 //  this.$Toast('已发送请求')
             }
+        },
+        __dialogCancel() {
+            this.dialogState = false
         },
         async __upload() {
             let files = this.$refs.UpFile.files[0]
@@ -354,6 +378,44 @@ export default {
     .upload {
         opacity: 1;
         transition: opacity 0.8s;
+    }
+}
+.mask {
+    position: fixed;
+    top: 80px;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 1000;
+    background: rgba(0, 0, 0, 0.8);
+    overflow: auto;
+    .details {
+        position: absolute;
+        left: 50%;
+        top: 55%;
+        width: 260px;
+        transform: translate(-50%, -50%);
+        text-align: center;
+        background: #ffffff;
+        .title {
+            height: 60px;
+            line-height: 60px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+        }
+        .btn {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            height: 40px;
+            line-height: 40px;
+            span {
+                flex-grow: 1;
+            }
+            > :nth-of-type(1) {
+                // background: #000;
+                border-right: 1px solid rgba(0, 0, 0, 0.1);
+            }
+        }
     }
 }
 </style>

@@ -22,11 +22,10 @@
 </template>
 
 <script>
-import { mapState, mapMutations } from 'vuex'
+import { mapState, mapMutations, mapActions } from 'vuex'
 import FeedTab from './FeedTab'
 import FeedNews from './FeedNews'
-import { fail } from 'assert'
-import { clearTimeout } from 'timers'
+import { format, formatDistance, subDays } from 'date-fns'
 
 export default {
     data() {
@@ -43,7 +42,12 @@ export default {
         })
     },
     methods: {
-        ...mapMutations(['SET_FEED_MENU_STATE', 'SET_LOADING_STATE']),
+        ...mapMutations([
+            'SET_FEED_MENU_STATE',
+            'SET_LOADING_STATE',
+            'SET_FEED_COUNT'
+        ]),
+        ...mapActions(['SET_FEED_NEW_COUNT']),
         async __getDatas(currentPage = 1, pageSize = 5) {
             this.requestCompleted = false
             let req = {
@@ -61,8 +65,17 @@ export default {
 
             if (res.code === 0) {
                 let tempList = res.data.list
+                let count = res.data.list.length
                 this.list = this.list.concat(tempList)
 
+                let time = format(
+                    new Date(this.list[0].publishTime),
+                    'yyyy-MM-dd hh:mm'
+                )
+                this.SET_FEED_NEW_COUNT({
+                    time,
+                    userId: req.userId
+                })
                 setTimeout(() => {
                     this.requestCompleted = true
                     this.isLoading = true
@@ -70,6 +83,7 @@ export default {
                         this.isLoading = false
                     }, 2000)
                 }, 1000)
+                this.SET_FEED_COUNT(count)
                 this.currentPage = res.data.currentPage
                 this.totalPage = res.data.totalPage
             } else {
@@ -129,6 +143,7 @@ export default {
 <style lang='scss' scoped>
 .more {
     position: fixed;
+    z-index: 9;
     bottom: 20px;
     left: 36%;
     background: #fff;
