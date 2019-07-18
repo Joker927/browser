@@ -48,6 +48,8 @@ Vue.directive('scroll', {
 })
 Vue.directive('tip', tip)
 
+console.log(1)
+
 /* eslint-disable no-new */
 new Vue({
     components: {
