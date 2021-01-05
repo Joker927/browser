@@ -56,7 +56,7 @@
         }
     },
     "dependencies": {
-        "axios": "^0.18.0",
+        "axios": "^0.21.1",
         "better-scroll": "^1.13.2",
         "date-fns": "^2.0.0-alpha.25",
         "emoji-mart-vue": "^2.6.6",
